@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
-import { PrismaClient, Role } from "@prisma/client"
+import { PrismaClient, Role, DossierStatus } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import pg from "pg"
 import * as dotenv from "dotenv"
@@ -94,7 +94,7 @@ async function main() {
     where: { email: "doctorant@uit.ac.ma" },
   })
 
-  await prisma.doctorant.upsert({
+  const doctorant = await prisma.doctorant.upsert({
     where: { userId: doctorantUser.id },
     update: {},
     create: {
@@ -125,6 +125,37 @@ async function main() {
     create: { userId: encadrantUser.id },
   })
   console.log("  ✓ Encadrant profile linked to Fatima Alaoui")
+
+  // ── 6. Completed past dossiers for Ahmed Bennani ─────────────────────────
+  console.log("\nStep 6 — Past reinscription dossiers")
+  const pastYears = ["2022-2023", "2023-2024", "2024-2025"]
+  for (const annee of pastYears) {
+    const existing = await prisma.dossier.findFirst({
+      where: { doctorantId: doctorant.id, anneeUniversitaire: annee },
+      select: { id: true, status: true },
+    })
+    if (existing) {
+      if (existing.status !== DossierStatus.REINSCRIPTION_EFFECTUEE) {
+        await prisma.dossier.update({
+          where: { id: existing.id },
+          data: { status: DossierStatus.REINSCRIPTION_EFFECTUEE },
+        })
+        console.log(`  ↩ updated  ${annee} → REINSCRIPTION_EFFECTUEE`)
+      } else {
+        console.log(`  · exists   ${annee}`)
+      }
+    } else {
+      await prisma.dossier.create({
+        data: {
+          doctorantId: doctorant.id,
+          laboratoireId: labo.id,
+          anneeUniversitaire: annee,
+          status: DossierStatus.REINSCRIPTION_EFFECTUEE,
+        },
+      })
+      console.log(`  ✓ created  ${annee}`)
+    }
+  }
 
   console.log("\nSeed complete. Test credentials:")
   console.log("  Password for all accounts: Test1234!")
