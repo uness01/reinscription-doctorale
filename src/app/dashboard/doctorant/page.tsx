@@ -237,16 +237,23 @@ export default async function DoctorantPage() {
                   }).format(new Date(currentDossier.updatedAt))}
                 </span>
               </div>
-              <p className={currentDossier.status === "BROUILLON" ? "mb-5 text-sm text-muted" : "text-sm text-muted"}>
+              <p className="mb-5 text-sm text-muted">
                 {STATUS_HINT[currentDossier.status] ??
                   "Votre dossier est en cours de traitement."}
               </p>
-              {currentDossier.status === "BROUILLON" && (
+              {currentDossier.status === "BROUILLON" ? (
                 <Link
                   href="/dashboard/doctorant/reinscription"
                   className="inline-flex rounded bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
                 >
                   Continuer la réinscription
+                </Link>
+              ) : (
+                <Link
+                  href={`/dashboard/doctorant/dossier/${currentDossier.id}`}
+                  className="inline-flex rounded border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-border/50"
+                >
+                  Voir mon dossier
                 </Link>
               )}
             </>

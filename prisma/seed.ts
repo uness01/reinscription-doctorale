@@ -119,7 +119,7 @@ async function main() {
     where: { email: "encadrant@uit.ac.ma" },
   })
 
-  await prisma.encadrant.upsert({
+  const encadrant = await prisma.encadrant.upsert({
     where: { userId: encadrantUser.id },
     update: {},
     create: { userId: encadrantUser.id },
@@ -155,6 +155,33 @@ async function main() {
       })
       console.log(`  ✓ created  ${annee}`)
     }
+  }
+
+  // ── 7. 2025-2026 dossier assigned to Fatima Alaoui, awaiting her decision ──
+  // updateMany covers every 2025-2026 dossier for Ahmed (there may be more than
+  // one if the form was used before seeding), so the encadrantId is never missed.
+  console.log("\nStep 7 — 2025-2026 dossier for encadrant testing")
+  const annee2526 = "2025-2026"
+  const { count } = await prisma.dossier.updateMany({
+    where: { doctorantId: doctorant.id, anneeUniversitaire: annee2526 },
+    data: {
+      encadrantId: encadrant.id,
+      status: DossierStatus.EN_ATTENTE_ENCADRANT,
+    },
+  })
+  if (count > 0) {
+    console.log(`  ✓ updated  ${count} dossier(s) ${annee2526} → EN_ATTENTE_ENCADRANT, encadrant assigned`)
+  } else {
+    await prisma.dossier.create({
+      data: {
+        doctorantId: doctorant.id,
+        laboratoireId: labo.id,
+        anneeUniversitaire: annee2526,
+        encadrantId: encadrant.id,
+        status: DossierStatus.EN_ATTENTE_ENCADRANT,
+      },
+    })
+    console.log(`  ✓ created  ${annee2526} → EN_ATTENTE_ENCADRANT, encadrant assigned`)
   }
 
   console.log("\nSeed complete. Test credentials:")
