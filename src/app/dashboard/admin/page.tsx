@@ -55,7 +55,10 @@ export default async function AdminPage() {
   })
 
   const queue = allDossiers.filter((d) => d.status === "VALIDE_ENCADRANT")
-  const others = allDossiers.filter((d) => d.status !== "VALIDE_ENCADRANT")
+  const toConfirm = allDossiers.filter((d) => d.status === "VALIDE_DEFINITIVEMENT")
+  const others = allDossiers.filter(
+    (d) => d.status !== "VALIDE_ENCADRANT" && d.status !== "VALIDE_DEFINITIVEMENT"
+  )
 
   return (
     <div className="max-w-3xl">
@@ -103,6 +106,28 @@ export default async function AdminPage() {
         ) : (
           <ul>
             {queue.map((d) => (
+              <DossierRow key={d.id} d={d} />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Confirmation queue: VALIDE_DEFINITIVEMENT */}
+      <section className="mb-6 rounded border border-border">
+        <div className="border-b border-border px-5 py-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted">
+            À confirmer — validation doyen obtenue ({toConfirm.length})
+          </h2>
+        </div>
+        {toConfirm.length === 0 ? (
+          <div className="px-5 py-8 text-center">
+            <p className="text-sm text-muted">
+              Aucun dossier en attente de confirmation.
+            </p>
+          </div>
+        ) : (
+          <ul>
+            {toConfirm.map((d) => (
               <DossierRow key={d.id} d={d} />
             ))}
           </ul>

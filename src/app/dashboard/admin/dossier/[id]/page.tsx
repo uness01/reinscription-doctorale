@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import ValidationPanel from "./ValidationPanel"
+import ConfirmerPanel from "./ConfirmerPanel"
 
 const STATUS_LABEL: Record<string, string> = {
   SOUMIS: "Soumis",
@@ -120,6 +121,7 @@ export default async function AdminDossierPage({
     (v) => v.valideur.role === "ENCADRANT"
   )
   const isPending = dossier.status === "VALIDE_ENCADRANT"
+  const isConfirmable = dossier.status === "VALIDE_DEFINITIVEMENT"
 
   return (
     <div className="max-w-2xl">
@@ -298,8 +300,11 @@ export default async function AdminDossierPage({
         )}
       </Section>
 
-      {/* Action panel — only when awaiting admin review */}
+      {/* Validation panel — only when awaiting admin review */}
       {isPending && <ValidationPanel dossierId={dossier.id} />}
+
+      {/* Confirm panel — only when doyen has given final approval */}
+      {isConfirmable && <ConfirmerPanel dossierId={dossier.id} />}
     </div>
   )
 }

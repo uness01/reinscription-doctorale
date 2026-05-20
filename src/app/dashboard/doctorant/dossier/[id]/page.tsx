@@ -119,6 +119,7 @@ export default async function DossierDetailPage({
         },
         orderBy: { signedAt: "asc" },
       },
+      attestation: true,
     },
   })
 
@@ -161,6 +162,29 @@ export default async function DossierDetailPage({
           Dernière mise à jour le {fmt.format(new Date(dossier.updatedAt))}
         </span>
       </div>
+
+      {/* ── Attestation download ─────────────────────────────────────────── */}
+      {dossier.attestation && (
+        <div className="mb-6 flex items-center justify-between rounded border border-accent/30 bg-accent/5 px-5 py-4">
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              Attestation de réinscription disponible
+            </p>
+            <p className="text-xs text-muted">
+              Votre réinscription pour {dossier.anneeUniversitaire} est
+              officielle.
+            </p>
+          </div>
+          <a
+            href={dossier.attestation.pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 inline-flex rounded bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
+          >
+            Télécharger
+          </a>
+        </div>
+      )}
 
       {/* ── Personal info ────────────────────────────────────────────────── */}
       <Section title="Informations personnelles">
