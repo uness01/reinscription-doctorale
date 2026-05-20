@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DOCTORANT
+  ENCADRANT
+  ADMIN
+  DIRECTEUR_LABO
+  DOYEN
+}
+
+enum DossierStatus {
+  BROUILLON
+  SOUMIS
+  EN_ATTENTE_ENCADRANT
+  CORRECTION_DEMANDEE
+  REFUSE
+  VALIDE_ENCADRANT
+  EN_ATTENTE_ADMIN
+  VALIDE_ADMIN
+  EN_ATTENTE_DIRECTEUR
+  SIGNE_DIRECTEUR
+  EN_ATTENTE_DOYEN
+  VALIDE_DEFINITIVEMENT
+  REINSCRIPTION_EFFECTUEE
+  ATTESTATION_GENEREE
+  ARCHIVE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  nom       String
+  prenom    String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctorant  Doctorant?
+  encadrant  Encadrant?
+  validations Validation[]
+}
+
+model Laboratoire {
+  id         String      @id @default(cuid())
+  nom        String
+  doctorants Doctorant[]
+  dossiers   Dossier[]
+}
+
+model Doctorant {
+  id                      String      @id @default(cuid())
+  userId                  String      @unique
+  user                    User        @relation(fields: [userId], references: [id])
+  cin                     String      @unique
+  cne                     String      @unique
+  apogee                  String      @unique
+  dateNaissance           DateTime
+  telephone               String
+  formationDoctorale      String
+  laboratoireId           String
+  laboratoire             Laboratoire @relation(fields: [laboratoireId], references: [id])
+  sujetThese              String
+  anneePremiereInscription Int
+  dossiers                Dossier[]
+}
+
+model Encadrant {
+  id       String    @id @default(cuid())
+  userId   String    @unique
+  user     User      @relation(fields: [userId], references: [id])
+  dossiers Dossier[]
+}
+
+model Dossier {
+  id                 String        @id @default(cuid())
+  doctorantId        String
+  doctorant          Doctorant     @relation(fields: [doctorantId], references: [id])
+  encadrantId        String?
+  encadrant          Encadrant?    @relation(fields: [encadrantId], references: [id])
+  laboratoireId      String
+  laboratoire        Laboratoire   @relation(fields: [laboratoireId], references: [id])
+  anneeUniversitaire String
+  status             DossierStatus @default(BROUILLON)
+  travauxRealises    String?
+  etatAvancement     String?
+  difficultes        String?
+  objectifsFuturs    String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  publications  Publication[]
+  activites     ActiviteScientifique[]
+  validations   Validation[]
+  attestation   Attestation?
+}
+
+model Publication {
+  id        String  @id @default(cuid())
+  dossierId String
+  dossier   Dossier @relation(fields: [dossierId], references: [id])
+  titre     String
+  type      String
+  auteurs   String
+  revue     String?
+  annee     Int
+  doi       String?
+  statut    String
+}
+
+model ActiviteScientifique {
+  id        String   @id @default(cuid())
+  dossierId String
+  dossier   Dossier  @relation(fields: [dossierId], references: [id])
+  type      String
+  titre     String
+  lieu      String?
+  date      DateTime?
+}
+
+model Validation {
+  id          String   @id @default(cuid())
+  dossierId   String
+  dossier     Dossier  @relation(fields: [dossierId], references: [id])
+  valideurId  String
+  valideur    User     @relation(fields: [valideurId], references: [id])
+  role        Role
+  decision    String
+  commentaire String?
+  signedAt    DateTime @default(now())
+}
+
+model Attestation {
+  id          String   @id @default(cuid())
+  dossierId   String   @unique
+  dossier     Dossier  @relation(fields: [dossierId], references: [id])
+  pdfUrl      String
+  generatedAt DateTime @default(now())
+}
