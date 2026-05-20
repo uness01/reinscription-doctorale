@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/client"
-import { getUserRole } from "./actions"
 
 // Each role maps to its dedicated dashboard route
 const ROLE_ROUTES: Record<string, string> = {
@@ -39,17 +38,26 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   })
+
+  useEffect(() => {
+    // Runs on every mount — clears any values left over from a previous session
+    // when the login page is reached via a soft navigation (e.g. back-button or
+    // an auth-guard redirect).  Hard navigations (the /api/auth/logout flow)
+    // already produce a fresh mount, but reset() is a cheap no-op in that case.
+    reset()
+  }, [])
 
   // Handles form submit: authenticate via Supabase, then redirect by role
   async function onSubmit(data: LoginFormData) {
     setServerError(null)
     const supabase = createClient()
 
-    // Step 1: Sign in — Supabase stores the session in a cookie on success
+    // Step 1: Sign in — Supabase stores the session cookie on success
     const { error: authError } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -60,15 +68,30 @@ export default function LoginPage() {
       return
     }
 
-    // Step 2: Read the role from the database (server action reads the cookie)
-    const { role, error: roleError } = await getUserRole()
+    // Step 2: Confirm the session is live (getUser re-validates the JWT)
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-    if (roleError || !role) {
-      setServerError(roleError ?? "Erreur lors de la récupération du rôle")
+    if (userError || !user) {
+      setServerError("Erreur lors de la récupération de la session")
       return
     }
 
-    // Step 3: Send the user to the dashboard that matches their role
+    // Step 3: Fetch the role via a plain API route — no server action involved
+    const res = await fetch("/api/auth/role")
+
+    if (!res.ok) {
+      setServerError("Aucun compte trouvé pour cet email")
+      return
+    }
+
+    const { role } = await res.json()
+
+    if (!role) {
+      setServerError("Aucun rôle associé à ce compte")
+      return
+    }
+
+    // Step 4: Navigate to the role-specific dashboard
     router.push(ROLE_ROUTES[role] ?? "/")
   }
 
