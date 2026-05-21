@@ -132,7 +132,7 @@ export default function LoginPage() {
             Connectez-vous avec votre email institutionnel.
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate autoComplete="off" className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
             {/* Email */}
             <div>
               <label
@@ -144,8 +144,9 @@ export default function LoginPage() {
               <input
                 {...register("email")}
                 id="email"
+                name="email"
                 type="email"
-                autoComplete="email"
+                autoComplete="username"
                 placeholder="prenom.nom@uit.ac.ma"
                 className={`${inputBase} ${errors.email ? inputError : inputDefault}`}
               />
@@ -173,8 +174,9 @@ export default function LoginPage() {
               <input
                 {...register("password")}
                 id="password"
+                name="password"
                 type="password"
-                autoComplete="new-password"
+                autoComplete="current-password"
                 className={`${inputBase} ${errors.password ? inputError : inputDefault}`}
               />
               {errors.password && (
