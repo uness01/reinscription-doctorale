@@ -14,7 +14,8 @@ const NEXT_STATUS: Record<Decision, string> = {
 export async function soumettreDecision(
   dossierId: string,
   decision: Decision,
-  commentaire: string
+  commentaire: string,
+  signature: string
 ): Promise<{ error: string | null }> {
   const user = await getSessionUser()
   if (!user || user.role !== "ENCADRANT") return { error: "Non autorisé" }
@@ -25,28 +26,19 @@ export async function soumettreDecision(
   })
   if (!encadrant) return { error: "Profil encadrant introuvable" }
 
-  // Verify the dossier is assigned to this encadrant and awaiting their decision
   const dossier = await prisma.dossier.findFirst({
     where: {
       id: dossierId,
       encadrantId: encadrant.id,
-      status: "EN_ATTENTE_ENCADRANT",
+      status: { in: ["SOUMIS", "EN_ATTENTE_ENCADRANT"] },
     },
     select: { id: true },
   })
-  if (!dossier) {
-    return {
-      error:
-        "Dossier introuvable ou déjà traité.",
-    }
-  }
+  if (!dossier) return { error: "Dossier introuvable ou déjà traité." }
 
   try {
-    await prisma.dossier.update({
-      where: { id: dossierId },
-      data: { status: NEXT_STATUS[decision] as any },
-    })
-
+    // Create validation record first — if this fails the dossier status is unchanged
+    // and the encadrant can retry with a clean state.
     await prisma.validation.create({
       data: {
         dossierId,
@@ -54,12 +46,18 @@ export async function soumettreDecision(
         role: "ENCADRANT",
         decision,
         commentaire: commentaire.trim() || null,
+        signature,
       },
+    })
+
+    await prisma.dossier.update({
+      where: { id: dossierId },
+      data: { status: NEXT_STATUS[decision] as any },
     })
 
     return { error: null }
   } catch (err) {
-    console.error("soumettreDecision:", err)
+    console.error("encadrant soumettreDecision error:", err)
     return { error: "Une erreur est survenue. Veuillez réessayer." }
   }
 }

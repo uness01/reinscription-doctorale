@@ -132,6 +132,7 @@ model Validation {
   role        Role
   decision    String
   commentaire String?
+  signature   String?
   signedAt    DateTime @default(now())
 }
 

@@ -70,9 +70,11 @@ function decisionLabel(decision: string) {
   const map: Record<string, string> = {
     APPROUVE: "Approuvé",
     VALIDE: "Validé",
+    VALIDE_DEFINITIVEMENT: "Validé définitivement",
     REFUSE: "Refusé",
     CORRECTION_DEMANDEE: "Correction demandée",
     SIGNE: "Signé",
+    CONFIRME: "Réinscription confirmée",
   }
   return map[decision.toUpperCase()] ?? decision
 }
@@ -174,6 +176,13 @@ export default async function AdminDossierPage({
             <p className="rounded border border-border bg-background px-3 py-2 text-sm text-foreground">
               {encadrantValidation.commentaire}
             </p>
+          )}
+          {encadrantValidation.signature && (
+            <img
+              src={encadrantValidation.signature}
+              alt="Signature de l'encadrant"
+              className="mt-3 h-16 max-w-[200px] rounded border border-border bg-white object-contain"
+            />
           )}
         </div>
       )}

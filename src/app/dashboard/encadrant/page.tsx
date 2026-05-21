@@ -71,14 +71,16 @@ export default async function EncadrantPage() {
     orderBy: { updatedAt: "desc" },
   })
 
+  const PENDING_STATUSES = ["SOUMIS", "EN_ATTENTE_ENCADRANT"]
+
   // Pending actions first
   const sorted = [
-    ...dossiers.filter((d) => d.status === "EN_ATTENTE_ENCADRANT"),
-    ...dossiers.filter((d) => d.status !== "EN_ATTENTE_ENCADRANT"),
+    ...dossiers.filter((d) => PENDING_STATUSES.includes(d.status)),
+    ...dossiers.filter((d) => !PENDING_STATUSES.includes(d.status)),
   ]
 
-  const pending = dossiers.filter(
-    (d) => d.status === "EN_ATTENTE_ENCADRANT"
+  const pending = dossiers.filter((d) =>
+    PENDING_STATUSES.includes(d.status)
   ).length
   const validated = dossiers.filter((d) =>
     ["VALIDE_ENCADRANT", "EN_ATTENTE_ADMIN", "VALIDE_ADMIN",

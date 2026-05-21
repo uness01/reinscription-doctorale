@@ -76,9 +76,11 @@ function decisionLabel(decision: string): string {
   const map: Record<string, string> = {
     APPROUVE: "Approuvé",
     VALIDE: "Validé",
+    VALIDE_DEFINITIVEMENT: "Validé définitivement",
     REFUSE: "Refusé",
     CORRECTION_DEMANDEE: "Correction demandée",
     SIGNE: "Signé",
+    CONFIRME: "Réinscription confirmée",
   }
   return map[decision.toUpperCase()] ?? decision
 }
@@ -164,7 +166,9 @@ export default async function DossierDetailPage({
       </div>
 
       {/* ── Attestation download ─────────────────────────────────────────── */}
-      {dossier.attestation && (
+      {dossier.attestation &&
+        (dossier.status === "REINSCRIPTION_EFFECTUEE" ||
+          dossier.status === "ATTESTATION_GENEREE") && (
         <div className="mb-6 flex items-center justify-between rounded border border-accent/30 bg-accent/5 px-5 py-4">
           <div>
             <p className="text-sm font-medium text-foreground">

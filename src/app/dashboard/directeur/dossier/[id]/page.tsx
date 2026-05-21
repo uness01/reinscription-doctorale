@@ -66,9 +66,11 @@ function decisionLabel(decision: string) {
   const map: Record<string, string> = {
     APPROUVE: "Approuvé",
     VALIDE: "Validé",
+    VALIDE_DEFINITIVEMENT: "Validé définitivement",
     REFUSE: "Refusé",
     CORRECTION_DEMANDEE: "Correction demandée",
     SIGNE: "Signé",
+    CONFIRME: "Réinscription confirmée",
   }
   return map[decision.toUpperCase()] ?? decision
 }
@@ -114,6 +116,11 @@ export default async function DirecteurDossierPage({
 
   const { doctorant } = dossier
   const isPending = dossier.status === "VALIDE_ADMIN"
+
+  // Validations from previous steps that carry a handwritten signature
+  const prevSignatures = dossier.validations.filter(
+    (v) => v.signature && v.valideur.role !== "DIRECTEUR_LABO"
+  )
 
   return (
     <div className="max-w-2xl">
@@ -269,6 +276,37 @@ export default async function DirecteurDossierPage({
           ))
         )}
       </Section>
+
+      {/* Previous validator signatures */}
+      {prevSignatures.length > 0 && (
+        <section className="mb-5 rounded border border-border">
+          <div className="border-b border-border px-5 py-3">
+            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted">
+              Signatures reçues ({prevSignatures.length})
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-6 px-5 py-4">
+            {prevSignatures.map((v) => (
+              <div key={v.id} className="flex flex-col">
+                <p className="text-xs font-medium text-foreground">
+                  {ROLE_LABEL[v.valideur.role] ?? v.valideur.role}
+                </p>
+                <p className="text-xs text-muted">
+                  {v.valideur.prenom} {v.valideur.nom}
+                </p>
+                <p className="mt-0.5 text-[10px] text-muted">
+                  {fmt.format(new Date(v.signedAt))}
+                </p>
+                <img
+                  src={v.signature!}
+                  alt="Signature"
+                  className="mt-2 h-14 max-w-[180px] rounded border border-border bg-white object-contain"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Signature panel — only when awaiting directeur */}
       {isPending && <SignaturePanel dossierId={dossier.id} />}

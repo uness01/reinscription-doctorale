@@ -68,9 +68,11 @@ function decisionLabel(decision: string) {
   const map: Record<string, string> = {
     APPROUVE: "Approuvé",
     VALIDE: "Validé",
+    VALIDE_DEFINITIVEMENT: "Validé définitivement",
     REFUSE: "Refusé",
     CORRECTION_DEMANDEE: "Correction demandée",
     SIGNE: "Signé",
+    CONFIRME: "Réinscription confirmée",
   }
   return map[decision.toUpperCase()] ?? decision
 }
@@ -121,7 +123,8 @@ export default async function EncadrantDossierPage({
   if (!dossier) redirect("/dashboard/encadrant")
 
   const { doctorant } = dossier
-  const isPending = dossier.status === "EN_ATTENTE_ENCADRANT"
+  const isPending =
+    dossier.status === "SOUMIS" || dossier.status === "EN_ATTENTE_ENCADRANT"
 
   return (
     <div className="max-w-2xl">

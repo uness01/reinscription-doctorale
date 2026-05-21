@@ -3,17 +3,23 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { signerDossier } from "./actions"
+import SignaturePad from "@/components/SignaturePad"
 
 export default function SignaturePanel({ dossierId }: { dossierId: string }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [commentaire, setCommentaire] = useState("")
+  const [signature, setSignature] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function handleSign() {
+    if (!signature) {
+      setError("Veuillez apposer votre signature avant de soumettre.")
+      return
+    }
     startTransition(async () => {
       setError(null)
-      const result = await signerDossier(dossierId, commentaire)
+      const result = await signerDossier(dossierId, commentaire, signature)
       if (result.error) {
         setError(result.error)
       } else {
@@ -46,6 +52,18 @@ export default function SignaturePanel({ dossierId }: { dossierId: string }) {
           />
         </div>
 
+        <div className="mb-5">
+          <label className="mb-1.5 block text-xs font-medium text-foreground">
+            Signature <span className="text-danger">*</span>
+          </label>
+          <SignaturePad onChange={setSignature} />
+          {!signature && (
+            <p className="mt-1 text-xs text-muted">
+              Dessinez votre signature dans le cadre ci-dessus.
+            </p>
+          )}
+        </div>
+
         {error && (
           <div className="mb-4 rounded border border-danger/20 bg-danger-bg px-4 py-3">
             <p className="text-sm text-danger">{error}</p>
@@ -54,7 +72,7 @@ export default function SignaturePanel({ dossierId }: { dossierId: string }) {
 
         <button
           type="button"
-          disabled={isPending}
+          disabled={isPending || !signature}
           onClick={handleSign}
           className="rounded bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark disabled:opacity-60"
         >

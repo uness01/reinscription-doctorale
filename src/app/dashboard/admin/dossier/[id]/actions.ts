@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { generateAttestationPdf } from "@/lib/pdf/attestation"
+import { generateAttestationPdf, type ValidatorEntry } from "@/lib/pdf/attestation"
 
 type Decision = "APPROUVE" | "REFUSE" | "CORRECTION_DEMANDEE"
 
@@ -16,7 +16,8 @@ const NEXT_STATUS: Record<Decision, string> = {
 export async function soumettreDecision(
   dossierId: string,
   decision: Decision,
-  commentaire: string
+  commentaire: string,
+  signature: string
 ): Promise<{ error: string | null }> {
   const user = await getSessionUser()
   if (!user || user.role !== "ADMIN") return { error: "Non autorisé" }
@@ -28,10 +29,6 @@ export async function soumettreDecision(
   if (!dossier) return { error: "Dossier introuvable ou déjà traité." }
 
   try {
-    await prisma.dossier.update({
-      where: { id: dossierId },
-      data: { status: NEXT_STATUS[decision] as any },
-    })
     await prisma.validation.create({
       data: {
         dossierId,
@@ -39,14 +36,37 @@ export async function soumettreDecision(
         role: "ADMIN",
         decision,
         commentaire: commentaire.trim() || null,
+        signature,
       },
     })
+
+    await prisma.dossier.update({
+      where: { id: dossierId },
+      data: { status: NEXT_STATUS[decision] as any },
+    })
+
     return { error: null }
   } catch (err) {
-    console.error("admin soumettreDecision:", err)
+    console.error("admin soumettreDecision error:", err)
     return { error: "Une erreur est survenue. Veuillez réessayer." }
   }
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  ENCADRANT: "Encadrant",
+  ADMIN: "Administration",
+  DIRECTEUR_LABO: "Directeur de labo",
+  DOYEN: "Doyen",
+}
+
+// Decisions that represent a positive approval (not rejection or correction)
+const POSITIVE_DECISIONS = new Set(["APPROUVE", "SIGNE", "VALIDE_DEFINITIVEMENT"])
+
+const fmtDate = new Intl.DateTimeFormat("fr-FR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+})
 
 export async function confirmerReinscription(
   dossierId: string
@@ -68,13 +88,32 @@ export async function confirmerReinscription(
   if (!dossier) return { error: "Dossier introuvable ou déjà traité." }
 
   try {
-    // ── 1. Generate PDF ──────────────────────────────────────────────────────
-    const dateGeneration = new Date().toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+    // ── 1. Collect all validator signatures for the PDF ───────────────────────
+    const allValidations = await prisma.validation.findMany({
+      where: { dossierId },
+      include: { valideur: { select: { nom: true, prenom: true } } },
+      orderBy: { signedAt: "asc" },
     })
 
+    // Keep the last positive validation per role (handles re-submissions)
+    const roleMap = new Map<string, typeof allValidations[0]>()
+    for (const v of allValidations) {
+      if (POSITIVE_DECISIONS.has(v.decision)) {
+        roleMap.set(v.role, v)
+      }
+    }
+
+    const validators: ValidatorEntry[] = Array.from(roleMap.values())
+      .sort((a, b) => a.signedAt.getTime() - b.signedAt.getTime())
+      .map((v) => ({
+        roleLabel: ROLE_LABELS[v.role] ?? v.role,
+        prenom: v.valideur.prenom,
+        nom: v.valideur.nom,
+        date: fmtDate.format(v.signedAt),
+        signature: v.signature,
+      }))
+
+    // ── 2. Generate PDF ──────────────────────────────────────────────────────
     const pdfBuffer = await generateAttestationPdf({
       prenom: dossier.doctorant.user.prenom,
       nom: dossier.doctorant.user.nom,
@@ -85,17 +124,17 @@ export async function confirmerReinscription(
       laboratoire: dossier.doctorant.laboratoire.nom,
       sujetThese: dossier.doctorant.sujetThese,
       anneeUniversitaire: dossier.anneeUniversitaire,
-      dateGeneration,
+      dateGeneration: fmtDate.format(new Date()),
+      validators,
     })
 
-    // ── 2. Upload to Supabase Storage ────────────────────────────────────────
+    // ── 3. Upload to Supabase Storage ────────────────────────────────────────
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SECRET_KEY!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    // Create bucket if it doesn't exist (no-op if already present)
     await supabaseAdmin.storage
       .createBucket("attestations", { public: true })
       .catch(() => {})
@@ -117,21 +156,34 @@ export async function confirmerReinscription(
       .from("attestations")
       .getPublicUrl(fileName)
 
-    // ── 3. Persist attestation + update status ───────────────────────────────
+    // ── 4. Persist attestation record ────────────────────────────────────────
     await prisma.attestation.upsert({
       where: { dossierId },
       update: { pdfUrl: publicUrl },
       create: { dossierId, pdfUrl: publicUrl },
     })
 
+    // ── 5. Update dossier status ─────────────────────────────────────────────
     await prisma.dossier.update({
       where: { id: dossierId },
       data: { status: "REINSCRIPTION_EFFECTUEE" },
     })
 
+    // ── 6. Record the admin confirmation in the validation history ────────────
+    await prisma.validation.create({
+      data: {
+        dossierId,
+        valideurId: user.id,
+        role: "ADMIN",
+        decision: "CONFIRME",
+        commentaire: null,
+        signature: null,
+      },
+    })
+
     return { error: null }
   } catch (err) {
-    console.error("confirmerReinscription:", err)
+    console.error("confirmerReinscription error:", err)
     return { error: "Une erreur est survenue. Veuillez réessayer." }
   }
 }
