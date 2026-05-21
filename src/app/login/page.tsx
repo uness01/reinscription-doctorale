@@ -145,7 +145,7 @@ export default function LoginPage() {
                 {...register("email")}
                 id="email"
                 type="email"
-                autoComplete="off"
+                autoComplete="email"
                 placeholder="prenom.nom@uit.ac.ma"
                 className={`${inputBase} ${errors.email ? inputError : inputDefault}`}
               />
