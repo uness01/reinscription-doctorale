@@ -7,7 +7,8 @@ type NavItem = { label: string; href: string }
 
 const NAV: Record<string, NavItem[]> = {
   DOCTORANT: [
-    { label: "Mes dossiers", href: "/dashboard/doctorant" },
+    { label: "Tableau de bord", href: "/dashboard/doctorant" },
+    { label: "Mes dossiers", href: "/dashboard/doctorant/dossiers" },
   ],
   ENCADRANT: [
     { label: "Tableau de bord", href: "/dashboard/encadrant" },
