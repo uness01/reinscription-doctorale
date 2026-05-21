@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Réinscription Doctorale — Université Ibn Tofail",
   description: "Gestion de réinscription doctorale — Centre des Études Doctorales",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
