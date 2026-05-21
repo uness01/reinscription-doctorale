@@ -162,7 +162,7 @@ export default function LoginPage() {
                   Mot de passe
                 </label>
                 <a
-                  href="#"
+                  href="/forgot-password"
                   className="text-xs text-muted transition-colors hover:text-accent"
                 >
                   Mot de passe oublié&nbsp;?
