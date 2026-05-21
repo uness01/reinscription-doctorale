@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 
 const inputBase =
@@ -41,9 +42,10 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <div className="h-[3px] shrink-0 bg-accent" />
 
-      <header className="shrink-0 border-b border-border px-6 py-3">
+      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center gap-4">
+        <Image src="/logo.png" alt="Université Ibn Tofail" height={36} width={160} className="object-contain" />
         <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-          Université Ibn Tofail&nbsp;&nbsp;·&nbsp;&nbsp;Centre des Études Doctorales
+          Centre des Études Doctorales
         </p>
       </header>
 

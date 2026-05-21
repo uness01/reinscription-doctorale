@@ -1,4 +1,4 @@
-import Link from "next/link"
+﻿import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -21,14 +21,14 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_CLASS: Record<string, string> = {
   EN_ATTENTE_ENCADRANT: "bg-accent/10 text-accent",
-  CORRECTION_DEMANDEE: "bg-danger-bg text-danger",
+  CORRECTION_DEMANDEE: "bg-warning-bg text-warning",
   REFUSE: "bg-danger-bg text-danger",
-  VALIDE_ENCADRANT: "bg-accent/10 text-accent",
-  VALIDE_ADMIN: "bg-accent/10 text-accent",
-  SIGNE_DIRECTEUR: "bg-accent/10 text-accent",
-  VALIDE_DEFINITIVEMENT: "bg-accent/20 text-accent-dark",
-  REINSCRIPTION_EFFECTUEE: "bg-accent/20 text-accent-dark",
-  ATTESTATION_GENEREE: "bg-accent/20 text-accent-dark",
+  VALIDE_ENCADRANT: "bg-success/10 text-success",
+  VALIDE_ADMIN: "bg-success/10 text-success",
+  SIGNE_DIRECTEUR: "bg-success/10 text-success",
+  VALIDE_DEFINITIVEMENT: "bg-success/20 text-success",
+  REINSCRIPTION_EFFECTUEE: "bg-success/20 text-success",
+  ATTESTATION_GENEREE: "bg-success/20 text-success",
 }
 
 const ROLE_LABEL: Record<string, string> = {
@@ -56,8 +56,9 @@ const ACT_TYPE_LABEL: Record<string, string> = {
 
 function decisionClass(decision: string) {
   const d = decision.toUpperCase()
-  if (d.includes("REFUSE") || d.includes("CORRECTION")) return "bg-danger-bg text-danger"
-  return "bg-accent/10 text-accent"
+  if (d.includes("REFUSE")) return "bg-danger-bg text-danger"
+  if (d.includes("CORRECTION")) return "bg-warning-bg text-warning"
+  return "bg-success/10 text-success"
 }
 
 function decisionLabel(decision: string) {
@@ -250,10 +251,11 @@ export default async function DoyenDossierPage({
               <div className="flex flex-col items-center">
                 <div
                   className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${
-                    v.decision.toUpperCase().includes("REFUSE") ||
-                    v.decision.toUpperCase().includes("CORRECTION")
+                    v.decision.toUpperCase().includes("REFUSE")
                       ? "bg-danger"
-                      : "bg-accent"
+                      : v.decision.toUpperCase().includes("CORRECTION")
+                      ? "bg-warning"
+                      : "bg-success"
                   }`}
                 />
                 {i < visibleValidations.length - 1 && (

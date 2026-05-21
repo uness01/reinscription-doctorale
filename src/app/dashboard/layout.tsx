@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { getSessionUser } from "@/lib/auth"
 import LogoutButton from "./LogoutButton"
 
@@ -52,13 +53,16 @@ export default async function DashboardLayout({
       <aside className="flex w-56 shrink-0 flex-col border-r border-border">
         <div className="h-[3px] shrink-0 bg-accent" />
 
-        <div className="border-b border-border px-5 py-3">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted leading-snug">
-            Université Ibn Tofail
-          </p>
-          <p className="text-[10px] uppercase tracking-[0.08em] text-muted/60 leading-snug">
-            Études Doctorales
-          </p>
+        <div className="border-b border-border px-4 py-3 flex items-center gap-3">
+          <Image src="/logo-small.png" alt="Ibn Tofail" width={36} height={36} className="shrink-0 object-contain" />
+          <div className="min-w-0">
+            <p className="text-[10px] font-medium uppercase tracking-[0.10em] text-muted leading-snug truncate">
+              Université Ibn Tofail
+            </p>
+            <p className="text-[10px] uppercase tracking-[0.06em] text-muted/60 leading-snug truncate">
+              Études Doctorales
+            </p>
+          </div>
         </div>
 
         <div className="border-b border-border px-5 py-2.5">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 
 // Each role maps to its dedicated dashboard route
@@ -110,9 +111,10 @@ export default function LoginPage() {
       <div className="h-[3px] shrink-0 bg-accent" />
 
       {/* Institution identifier */}
-      <header className="shrink-0 border-b border-border px-6 py-3">
+      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center gap-4">
+        <Image src="/logo.png" alt="Université Ibn Tofail" height={36} width={160} className="object-contain" />
         <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-          Université Ibn Tofail&nbsp;&nbsp;·&nbsp;&nbsp;Centre des Études Doctorales
+          Centre des Études Doctorales
         </p>
       </header>
 

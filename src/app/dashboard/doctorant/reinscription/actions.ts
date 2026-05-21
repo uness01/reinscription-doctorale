@@ -39,7 +39,7 @@ export async function saveDossier(input: {
   // Verify the doctorantId belongs to the authenticated user
   const owned = await prisma.doctorant.findFirst({
     where: { id: input.doctorantId, userId: user.id },
-    select: { id: true },
+    select: { id: true, encadrantId: true },
   })
   if (!owned) return { error: "Non autorisé" }
 
@@ -88,12 +88,14 @@ export async function saveDossier(input: {
         })
       }
     } else {
-      // Create dossier with all nested data in one write
+      // Create dossier — copy encadrantId from the Doctorant profile so the
+      // encadrant dashboard immediately sees this dossier.
       await prisma.dossier.create({
         data: {
           doctorantId: input.doctorantId,
           laboratoireId: input.laboratoireId,
           anneeUniversitaire: input.anneeUniversitaire,
+          encadrantId: owned.encadrantId ?? null,
           ...dossierFields,
           publications: { create: pubs },
           activites: { create: acts },

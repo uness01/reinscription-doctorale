@@ -23,6 +23,7 @@ export async function createUser(input: {
   email: string
   role: string
   password: string
+  doctorant?: DoctorantInput
 }): Promise<{ error: string | null }> {
   const admin = await getSessionUser()
   if (!admin || admin.role !== "ADMIN") return { error: "Non autorisé" }
@@ -36,12 +37,38 @@ export async function createUser(input: {
   })
   if (authErr) return { error: authErr.message }
 
+  let createdUserId: string | null = null
   try {
-    await prisma.user.create({
+    const created = await prisma.user.create({
       data: { email, nom: input.nom.trim(), prenom: input.prenom.trim(), role: input.role as any },
     })
+    createdUserId = created.id
+
+    if (input.role === "DOCTORANT" && input.doctorant) {
+      const d = input.doctorant
+      await prisma.doctorant.create({
+        data: {
+          userId: created.id,
+          cin: d.cin.trim(),
+          cne: d.cne.trim(),
+          apogee: d.apogee.trim(),
+          dateNaissance: new Date(d.dateNaissance),
+          telephone: d.telephone.trim(),
+          formationDoctorale: d.formationDoctorale.trim(),
+          laboratoireId: d.laboratoireId,
+          sujetThese: d.sujetThese.trim(),
+          anneePremiereInscription: d.anneePremiereInscription,
+          encadrantId: d.encadrantId || null,
+        },
+      })
+    }
+
     return { error: null }
   } catch (err: any) {
+    // Rollback: remove the Prisma user then the Supabase account
+    if (createdUserId) {
+      await prisma.user.delete({ where: { id: createdUserId } }).catch(() => {})
+    }
     const uid = await getSupabaseUid(email)
     if (uid) await supabaseAdmin.auth.admin.deleteUser(uid)
     return { error: err.message ?? "Erreur lors de la création." }

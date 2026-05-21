@@ -4,14 +4,20 @@
    Using @theme (not inline) so bg-background, text-foreground, etc. resolve
    at build time and don't depend on a CSS variable chain at runtime. */
 @theme {
-  --color-background: oklch(98.5% 0.005 155);
-  --color-foreground: oklch(18% 0.01 155);
-  --color-accent: oklch(44% 0.15 155);
-  --color-accent-dark: oklch(38% 0.15 155);
-  --color-muted: oklch(48% 0.01 155);
-  --color-border: oklch(88% 0.01 155);
+  --color-background: oklch(98.5% 0.004 264);
+  --color-foreground: oklch(18% 0.01 264);
+  --color-accent: oklch(38% 0.175 264);
+  --color-accent-dark: oklch(32% 0.175 264);
+  --color-muted: oklch(48% 0.01 264);
+  --color-border: oklch(88% 0.01 264);
   --color-danger: oklch(50% 0.18 25);
   --color-danger-bg: oklch(97% 0.02 25);
+  /* Positive outcome states — green, kept distinct from the brand blue */
+  --color-success: oklch(44% 0.15 142);
+  --color-success-bg: oklch(96% 0.03 142);
+  /* Neutral / pending-action states — amber */
+  --color-warning: oklch(52% 0.16 72);
+  --color-warning-bg: oklch(97% 0.05 72);
 }
 
 /* Font tokens must stay inline — --font-geist-sans is a runtime variable
@@ -22,7 +28,7 @@
 }
 
 body {
-  background: oklch(98.5% 0.005 155);
-  color: oklch(18% 0.01 155);
+  background: oklch(98.5% 0.004 264);
+  color: oklch(18% 0.01 264);
   font-family: var(--font-sans, system-ui, sans-serif);
 }

@@ -18,8 +18,8 @@ import {
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 
-const ACCENT = "#2d6a4f"
-const COLORS = ["#2d6a4f", "#52b788", "#74c69d", "#95d5b2", "#b7e4c7", "#d8f3dc"]
+const ACCENT = "#1B3A8C"
+const COLORS = ["#1B3A8C", "#2952B3", "#3B6FD4", "#6B9FE4", "#A8C4F0", "#D4E5FF"]
 
 const AXIS_STYLE = { fontSize: 11, fill: "#888" }
 const TOOLTIP_STYLE = {
@@ -116,7 +116,7 @@ export function FormationChart({ data }: { data: ChartData["formationData"] }) {
             width={150}
           />
           <Tooltip contentStyle={TOOLTIP_STYLE} />
-          <Bar dataKey="count" name="Doctorants" fill="#52b788" radius={[0, 3, 3, 0]} />
+          <Bar dataKey="count" name="Doctorants" fill="#3B6FD4" radius={[0, 3, 3, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>

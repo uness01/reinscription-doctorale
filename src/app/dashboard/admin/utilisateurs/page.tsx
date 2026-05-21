@@ -66,7 +66,7 @@ export default async function UtilisateursPage() {
       </div>
 
       {/* Add user */}
-      <AddUserPanel />
+      <AddUserPanel laboratoires={labOptions} encadrants={encadrantOptions} />
 
       {/* User list */}
       <section className="rounded border border-border">

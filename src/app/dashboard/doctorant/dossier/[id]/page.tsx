@@ -1,4 +1,4 @@
-import Link from "next/link"
+﻿import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -24,20 +24,20 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 const STATUS_CLASS: Record<string, string> = {
-  BROUILLON: "bg-border text-muted",
-  SOUMIS: "bg-accent/10 text-accent",
+  BROUILLON: "bg-warning-bg text-warning",
+  SOUMIS: "bg-warning-bg text-warning",
   EN_ATTENTE_ENCADRANT: "bg-accent/10 text-accent",
-  CORRECTION_DEMANDEE: "bg-danger-bg text-danger",
+  CORRECTION_DEMANDEE: "bg-warning-bg text-warning",
   REFUSE: "bg-danger-bg text-danger",
-  VALIDE_ENCADRANT: "bg-accent/10 text-accent",
+  VALIDE_ENCADRANT: "bg-success/10 text-success",
   EN_ATTENTE_ADMIN: "bg-accent/10 text-accent",
-  VALIDE_ADMIN: "bg-accent/10 text-accent",
+  VALIDE_ADMIN: "bg-success/10 text-success",
   EN_ATTENTE_DIRECTEUR: "bg-accent/10 text-accent",
-  SIGNE_DIRECTEUR: "bg-accent/10 text-accent",
+  SIGNE_DIRECTEUR: "bg-success/10 text-success",
   EN_ATTENTE_DOYEN: "bg-accent/10 text-accent",
-  VALIDE_DEFINITIVEMENT: "bg-accent/20 text-accent-dark",
-  REINSCRIPTION_EFFECTUEE: "bg-accent/20 text-accent-dark",
-  ATTESTATION_GENEREE: "bg-accent/20 text-accent-dark",
+  VALIDE_DEFINITIVEMENT: "bg-success/20 text-success",
+  REINSCRIPTION_EFFECTUEE: "bg-success/20 text-success",
+  ATTESTATION_GENEREE: "bg-success/20 text-success",
   ARCHIVE: "bg-border text-muted",
 }
 
@@ -68,8 +68,8 @@ const ACT_TYPE_LABEL: Record<string, string> = {
 function decisionClass(decision: string): string {
   const d = decision.toUpperCase()
   if (d.includes("REFUSE")) return "bg-danger-bg text-danger"
-  if (d.includes("CORRECTION")) return "bg-danger-bg text-danger"
-  return "bg-accent/10 text-accent"
+  if (d.includes("CORRECTION")) return "bg-warning-bg text-warning"
+  return "bg-success/10 text-success"
 }
 
 function decisionLabel(decision: string): string {
@@ -303,8 +303,7 @@ export default async function DossierDetailPage({
                     className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${
                       v.decision.toUpperCase().includes("REFUSE") ||
                       v.decision.toUpperCase().includes("CORRECTION")
-                        ? "bg-danger"
-                        : "bg-accent"
+                        ? "bg-danger" : "bg-success"
                     }`}
                   />
                   {i < dossier.validations.length - 1 && (
