@@ -162,6 +162,17 @@ export default async function DoctorantPage() {
 
   const currentDossier = byYear.get(annee) ?? null
 
+  // Fetch the correction comment if the current dossier is awaiting correction
+  let correctionComment: string | null = null
+  if (currentDossier?.status === "CORRECTION_DEMANDEE") {
+    const correction = await prisma.validation.findFirst({
+      where: { dossierId: currentDossier.id, decision: "CORRECTION_DEMANDEE" },
+      select: { commentaire: true },
+      orderBy: { signedAt: "desc" },
+    })
+    correctionComment = correction?.commentaire ?? null
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="max-w-2xl">
@@ -241,12 +252,31 @@ export default async function DoctorantPage() {
                 {STATUS_HINT[currentDossier.status] ??
                   "Votre dossier est en cours de traitement."}
               </p>
+
+              {/* Correction comment banner */}
+              {currentDossier.status === "CORRECTION_DEMANDEE" &&
+                correctionComment && (
+                  <div className="mb-5 rounded border border-danger/30 bg-danger-bg px-4 py-3">
+                    <p className="mb-1 text-xs font-semibold text-danger">
+                      Commentaire du valideur
+                    </p>
+                    <p className="text-sm text-danger">{correctionComment}</p>
+                  </div>
+                )}
+
               {currentDossier.status === "BROUILLON" ? (
                 <Link
                   href="/dashboard/doctorant/reinscription"
                   className="inline-flex rounded bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
                 >
                   Continuer la réinscription
+                </Link>
+              ) : currentDossier.status === "CORRECTION_DEMANDEE" ? (
+                <Link
+                  href="/dashboard/doctorant/reinscription"
+                  className="inline-flex rounded bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
+                >
+                  Corriger mon dossier
                 </Link>
               ) : (
                 <Link

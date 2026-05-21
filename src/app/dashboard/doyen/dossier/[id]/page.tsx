@@ -115,9 +115,23 @@ export default async function DoyenDossierPage({
   const { doctorant } = dossier
   const isPending = dossier.status === "SIGNE_DIRECTEUR"
 
-  const prevSignatures = dossier.validations.filter(
-    (v) => v.signature && v.valideur.role !== "DOYEN"
+  // Doyen sees all of their own decisions + only positive decisions from other roles
+  const visibleValidations = dossier.validations.filter(
+    (v) => v.valideur.role === "DOYEN" || !["CORRECTION_DEMANDEE", "REFUSE"].includes(v.decision)
   )
+
+  // Previous signatures: last positive decision per preceding role, with a signature image
+  const _sigByRole = new Map<string, (typeof dossier.validations)[0]>()
+  for (const v of dossier.validations) {
+    if (
+      v.signature &&
+      ["ENCADRANT", "ADMIN", "DIRECTEUR_LABO"].includes(v.valideur.role) &&
+      ["APPROUVE", "SIGNE"].includes(v.decision)
+    ) {
+      _sigByRole.set(v.valideur.role, v)
+    }
+  }
+  const prevSignatures = Array.from(_sigByRole.values())
 
   return (
     <div className="max-w-2xl">
@@ -223,12 +237,12 @@ export default async function DoyenDossierPage({
 
       {/* Full validation history */}
       <Section title="Historique de validation">
-        {dossier.validations.length === 0 ? (
+        {visibleValidations.length === 0 ? (
           <div className="py-3">
             <p className="text-sm text-muted">Aucune validation enregistrée.</p>
           </div>
         ) : (
-          dossier.validations.map((v, i) => (
+          visibleValidations.map((v, i) => (
             <div
               key={v.id}
               className="flex gap-4 border-b border-border py-4 last:border-b-0"
@@ -242,7 +256,7 @@ export default async function DoyenDossierPage({
                       : "bg-accent"
                   }`}
                 />
-                {i < dossier.validations.length - 1 && (
+                {i < visibleValidations.length - 1 && (
                   <div className="mt-1 w-px flex-1 bg-border" />
                 )}
               </div>

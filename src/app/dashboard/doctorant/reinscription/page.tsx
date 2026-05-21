@@ -26,16 +26,27 @@ export default async function ReinscriptionPage() {
 
   const annee = currentAcademicYear()
 
-  // Load existing BROUILLON for pre-filling — most recent wins
+  // Load existing BROUILLON or CORRECTION_DEMANDEE for pre-filling
   const draft = await prisma.dossier.findFirst({
     where: {
       doctorantId: doctorant.id,
       anneeUniversitaire: annee,
-      status: "BROUILLON",
+      status: { in: ["BROUILLON", "CORRECTION_DEMANDEE"] },
     },
     include: { publications: true, activites: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: { updatedAt: "desc" },
   })
+
+  // Fetch the correction comment so it can be shown throughout the form
+  let correctionComment: string | null = null
+  if (draft?.status === "CORRECTION_DEMANDEE") {
+    const correction = await prisma.validation.findFirst({
+      where: { dossierId: draft.id, decision: "CORRECTION_DEMANDEE" },
+      select: { commentaire: true },
+      orderBy: { signedAt: "desc" },
+    })
+    correctionComment = correction?.commentaire ?? null
+  }
 
   return (
     <ReinscriptionForm
@@ -58,6 +69,7 @@ export default async function ReinscriptionPage() {
         sujetThese: doctorant.sujetThese,
         anneePremiereInscription: doctorant.anneePremiereInscription,
       }}
+      correctionComment={correctionComment}
       draft={
         draft
           ? {

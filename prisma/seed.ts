@@ -157,14 +157,10 @@ async function main() {
     }
   }
 
-  // ── 7. 2025-2026 dossier — reset to SOUMIS, delete all validations ──────────
-  // updateMany covers every 2025-2026 dossier for Ahmed so encadrantId is set
-  // on all of them, then we delete validations so the full signature workflow
-  // can be tested from scratch.
-  console.log("\nStep 7 — 2025-2026 dossier reset to SOUMIS for full workflow testing")
+  // ── 7. 2025-2026 dossier — reset to BROUILLON, delete all validations + attestation ──
+  console.log("\nStep 7 — 2025-2026 dossier reset to BROUILLON for full workflow testing")
   const annee2526 = "2025-2026"
 
-  // Find all 2025-2026 dossiers for Ahmed so we can clear their validations
   const dossiers2526 = await prisma.dossier.findMany({
     where: { doctorantId: doctorant.id, anneeUniversitaire: annee2526 },
     select: { id: true },
@@ -172,21 +168,39 @@ async function main() {
 
   if (dossiers2526.length > 0) {
     const ids = dossiers2526.map((d) => d.id)
-    const { count: delCount } = await prisma.validation.deleteMany({
+
+    const { count: valCount } = await prisma.validation.deleteMany({
       where: { dossierId: { in: ids } },
     })
-    if (delCount > 0) {
-      console.log(`  ✓ deleted  ${delCount} validation(s) for ${annee2526} dossier(s)`)
-    }
+    if (valCount > 0) console.log(`  ✓ deleted  ${valCount} validation(s)`)
+
+    const { count: attCount } = await prisma.attestation.deleteMany({
+      where: { dossierId: { in: ids } },
+    })
+    if (attCount > 0) console.log(`  ✓ deleted  ${attCount} attestation(s)`)
+
+    const { count: pubCount } = await prisma.publication.deleteMany({
+      where: { dossierId: { in: ids } },
+    })
+    if (pubCount > 0) console.log(`  ✓ deleted  ${pubCount} publication(s)`)
+
+    const { count: actCount } = await prisma.activiteScientifique.deleteMany({
+      where: { dossierId: { in: ids } },
+    })
+    if (actCount > 0) console.log(`  ✓ deleted  ${actCount} activité(s)`)
 
     const { count } = await prisma.dossier.updateMany({
       where: { doctorantId: doctorant.id, anneeUniversitaire: annee2526 },
       data: {
         encadrantId: encadrant.id,
-        status: DossierStatus.SOUMIS,
+        status: DossierStatus.BROUILLON,
+        travauxRealises: null,
+        etatAvancement: null,
+        difficultes: null,
+        objectifsFuturs: null,
       },
     })
-    console.log(`  ✓ updated  ${count} dossier(s) ${annee2526} → SOUMIS, encadrant assigned`)
+    console.log(`  ✓ updated  ${count} dossier(s) ${annee2526} → BROUILLON, encadrant assigned`)
   } else {
     await prisma.dossier.create({
       data: {
@@ -194,10 +208,10 @@ async function main() {
         laboratoireId: labo.id,
         anneeUniversitaire: annee2526,
         encadrantId: encadrant.id,
-        status: DossierStatus.SOUMIS,
+        status: DossierStatus.BROUILLON,
       },
     })
-    console.log(`  ✓ created  ${annee2526} → SOUMIS, encadrant assigned`)
+    console.log(`  ✓ created  ${annee2526} → BROUILLON, encadrant assigned`)
   }
 
   console.log("\nSeed complete. Test credentials:")

@@ -119,11 +119,30 @@ export default async function AdminDossierPage({
   if (!dossier) redirect("/dashboard/admin")
 
   const { doctorant } = dossier
-  const encadrantValidation = dossier.validations.find(
-    (v) => v.valideur.role === "ENCADRANT"
-  )
   const isPending = dossier.status === "VALIDE_ENCADRANT"
   const isConfirmable = dossier.status === "VALIDE_DEFINITIVEMENT"
+
+  // Admin sees only the encadrant's final APPROVED decision, not their correction requests
+  const encadrantValidation =
+    dossier.validations
+      .filter((v) => v.valideur.role === "ENCADRANT" && v.decision === "APPROUVE")
+      .at(-1) ?? null
+
+  // Admin sees all of their own decisions, but only positive decisions from other roles
+  const visibleValidations = dossier.validations.filter(
+    (v) => v.valideur.role === "ADMIN" || !["CORRECTION_DEMANDEE", "REFUSE"].includes(v.decision)
+  )
+
+  // All four validators' final positive signatures, shown on the confirmation page
+  // Decisions: APPROUVE (encadrant + admin first), SIGNE (directeur), VALIDE_DEFINITIVEMENT (doyen)
+  const POSITIVE = new Set(["APPROUVE", "SIGNE", "VALIDE_DEFINITIVEMENT"])
+  const _confirmSigMap = new Map<string, (typeof dossier.validations)[0]>()
+  for (const v of dossier.validations) {
+    if (v.signature && POSITIVE.has(v.decision)) {
+      _confirmSigMap.set(v.valideur.role, v) // last positive per role wins
+    }
+  }
+  const confirmSignatures = Array.from(_confirmSigMap.values())
 
   return (
     <div className="max-w-2xl">
@@ -156,8 +175,8 @@ export default async function AdminDossierPage({
         </span>
       </div>
 
-      {/* Encadrant validation — surfaced prominently for the admin */}
-      {encadrantValidation && (
+      {/* Encadrant's avis — only shown while awaiting admin's own decision */}
+      {isPending && encadrantValidation && (
         <div className="mb-6 rounded border border-border px-5 py-4">
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
             Avis de l&apos;encadrant
@@ -260,12 +279,12 @@ export default async function AdminDossierPage({
 
       {/* Full validation history */}
       <Section title="Historique de validation">
-        {dossier.validations.length === 0 ? (
+        {visibleValidations.length === 0 ? (
           <div className="py-3">
             <p className="text-sm text-muted">Aucune validation enregistrée.</p>
           </div>
         ) : (
-          dossier.validations.map((v, i) => (
+          visibleValidations.map((v, i) => (
             <div
               key={v.id}
               className="flex gap-4 border-b border-border py-4 last:border-b-0"
@@ -279,7 +298,7 @@ export default async function AdminDossierPage({
                       : "bg-accent"
                   }`}
                 />
-                {i < dossier.validations.length - 1 && (
+                {i < visibleValidations.length - 1 && (
                   <div className="mt-1 w-px flex-1 bg-border" />
                 )}
               </div>
@@ -311,6 +330,37 @@ export default async function AdminDossierPage({
 
       {/* Validation panel — only when awaiting admin review */}
       {isPending && <ValidationPanel dossierId={dossier.id} />}
+
+      {/* All validator signatures — shown when ready for final confirmation */}
+      {isConfirmable && confirmSignatures.length > 0 && (
+        <section className="mb-5 rounded border border-border">
+          <div className="border-b border-border px-5 py-3">
+            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted">
+              Signatures des valideurs ({confirmSignatures.length})
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-6 px-5 py-4">
+            {confirmSignatures.map((v) => (
+              <div key={v.id} className="flex flex-col">
+                <p className="text-xs font-medium text-foreground">
+                  {ROLE_LABEL[v.valideur.role] ?? v.valideur.role}
+                </p>
+                <p className="text-xs text-muted">
+                  {v.valideur.prenom} {v.valideur.nom}
+                </p>
+                <p className="mt-0.5 text-[10px] text-muted">
+                  {fmt.format(new Date(v.signedAt))}
+                </p>
+                <img
+                  src={v.signature!}
+                  alt="Signature"
+                  className="mt-2 h-14 max-w-[180px] rounded border border-border bg-white object-contain"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Confirm panel — only when doyen has given final approval */}
       {isConfirmable && <ConfirmerPanel dossierId={dossier.id} />}

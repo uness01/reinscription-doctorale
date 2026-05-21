@@ -27,6 +27,7 @@ type Props = {
   annee: string
   doctorantId: string
   laboratoireId: string
+  correctionComment?: string | null
   personalInfo: {
     nom: string
     prenom: string
@@ -80,6 +81,7 @@ export default function ReinscriptionForm({
   annee,
   doctorantId,
   laboratoireId,
+  correctionComment,
   personalInfo,
   doctoralInfo,
   draft,
@@ -187,6 +189,16 @@ export default function ReinscriptionForm({
       <p className="mb-6 text-sm text-muted">
         Complétez les 6 étapes pour soumettre votre demande.
       </p>
+
+      {/* Correction banner — shown on every step when form opened in correction mode */}
+      {correctionComment && (
+        <div className="mb-6 rounded border border-danger/30 bg-danger-bg px-5 py-4">
+          <p className="mb-1 text-xs font-semibold text-danger">
+            Correction demandée — apportez les modifications suivantes :
+          </p>
+          <p className="text-sm text-danger">{correctionComment}</p>
+        </div>
+      )}
 
       {/* Progress bar */}
       <div className="mb-8 flex items-start gap-1">
@@ -658,7 +670,11 @@ export default function ReinscriptionForm({
                   disabled={isPending}
                   className="rounded bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark disabled:opacity-60"
                 >
-                  {isPending ? "Envoi en cours…" : "Soumettre la demande"}
+                  {isPending
+                    ? "Envoi en cours…"
+                    : correctionComment
+                    ? "Resoumettre le dossier"
+                    : "Soumettre la demande"}
                 </button>
               </>
             )}

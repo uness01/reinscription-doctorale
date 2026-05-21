@@ -123,6 +123,11 @@ export default async function EncadrantDossierPage({
   if (!dossier) redirect("/dashboard/encadrant")
 
   const { doctorant } = dossier
+
+  // Encadrant sees only their own validation decisions (no admin/directeur/doyen entries)
+  const visibleValidations = dossier.validations.filter(
+    (v) => v.valideur.role === "ENCADRANT"
+  )
   const isPending =
     dossier.status === "SOUMIS" || dossier.status === "EN_ATTENTE_ENCADRANT"
 
@@ -229,12 +234,12 @@ export default async function EncadrantDossierPage({
 
       {/* Validation history */}
       <Section title="Historique de validation">
-        {dossier.validations.length === 0 ? (
+        {visibleValidations.length === 0 ? (
           <div className="py-3">
             <p className="text-sm text-muted">Aucune validation enregistrée.</p>
           </div>
         ) : (
-          dossier.validations.map((v, i) => (
+          visibleValidations.map((v, i) => (
             <div
               key={v.id}
               className="flex gap-4 border-b border-border py-4 last:border-b-0"
@@ -248,7 +253,7 @@ export default async function EncadrantDossierPage({
                       : "bg-accent"
                   }`}
                 />
-                {i < dossier.validations.length - 1 && (
+                {i < visibleValidations.length - 1 && (
                   <div className="mt-1 w-px flex-1 bg-border" />
                 )}
               </div>
