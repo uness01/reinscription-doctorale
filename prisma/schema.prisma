@@ -98,6 +98,8 @@ model Dossier {
   activites     ActiviteScientifique[]
   validations   Validation[]
   attestation   Attestation?
+
+  @@unique([doctorantId, anneeUniversitaire])
 }
 
 model Publication {

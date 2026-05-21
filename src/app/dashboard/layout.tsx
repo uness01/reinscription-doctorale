@@ -14,6 +14,7 @@ const NAV: Record<string, NavItem[]> = {
   ],
   ADMIN: [
     { label: "Tableau de bord", href: "/dashboard/admin" },
+    { label: "Statistiques", href: "/dashboard/admin/stats" },
   ],
   DIRECTEUR_LABO: [
     { label: "Tableau de bord", href: "/dashboard/directeur" },
