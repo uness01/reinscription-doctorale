@@ -38,6 +38,7 @@ model User {
   nom       String
   prenom    String
   role      Role
+  actif     Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -67,14 +68,17 @@ model Doctorant {
   laboratoire             Laboratoire @relation(fields: [laboratoireId], references: [id])
   sujetThese              String
   anneePremiereInscription Int
+  encadrantId             String?
+  encadrant               Encadrant?  @relation(fields: [encadrantId], references: [id])
   dossiers                Dossier[]
 }
 
 model Encadrant {
-  id       String    @id @default(cuid())
-  userId   String    @unique
-  user     User      @relation(fields: [userId], references: [id])
-  dossiers Dossier[]
+  id         String      @id @default(cuid())
+  userId     String      @unique
+  user       User        @relation(fields: [userId], references: [id])
+  dossiers   Dossier[]
+  doctorants Doctorant[]
 }
 
 model Dossier {
