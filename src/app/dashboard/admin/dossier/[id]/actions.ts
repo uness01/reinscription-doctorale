@@ -20,7 +20,7 @@ export async function soumettreDecision(
   signature: string
 ): Promise<{ error: string | null }> {
   const user = await getSessionUser()
-  if (!user || user.role !== "ADMIN") return { error: "Non autorisé" }
+  if (!user || user.role !== "ADMIN") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   const dossier = await prisma.dossier.findFirst({
     where: { id: dossierId, status: "VALIDE_ENCADRANT" },
@@ -72,7 +72,7 @@ export async function confirmerReinscription(
   dossierId: string
 ): Promise<{ error: string | null }> {
   const user = await getSessionUser()
-  if (!user || user.role !== "ADMIN") return { error: "Non autorisé" }
+  if (!user || user.role !== "ADMIN") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   const dossier = await prisma.dossier.findFirst({
     where: { id: dossierId, status: "VALIDE_DEFINITIVEMENT" },

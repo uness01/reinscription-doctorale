@@ -34,14 +34,14 @@ export async function saveDossier(input: {
   status: "BROUILLON" | "SOUMIS"
 }): Promise<{ error: string | null }> {
   const user = await getSessionUser()
-  if (!user || user.role !== "DOCTORANT") return { error: "Non autorisé" }
+  if (!user || user.role !== "DOCTORANT") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   // Verify the doctorantId belongs to the authenticated user
   const owned = await prisma.doctorant.findFirst({
     where: { id: input.doctorantId, userId: user.id },
     select: { id: true, encadrantId: true },
   })
-  if (!owned) return { error: "Non autorisé" }
+  if (!owned) return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   const dossierFields = {
     travauxRealises: input.travauxRealises || null,

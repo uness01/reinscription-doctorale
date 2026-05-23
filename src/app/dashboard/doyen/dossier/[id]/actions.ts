@@ -9,7 +9,7 @@ export async function validerDefinitivement(
   signature: string
 ): Promise<{ error: string | null }> {
   const user = await getSessionUser()
-  if (!user || user.role !== "DOYEN") return { error: "Non autorisé" }
+  if (!user || user.role !== "DOYEN") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   const dossier = await prisma.dossier.findFirst({
     where: { id: dossierId, status: "SIGNE_DIRECTEUR" },

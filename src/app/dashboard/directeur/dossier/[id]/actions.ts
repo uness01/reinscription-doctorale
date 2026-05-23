@@ -9,7 +9,7 @@ export async function signerDossier(
   signature: string
 ): Promise<{ error: string | null }> {
   const user = await getSessionUser()
-  if (!user || user.role !== "DIRECTEUR_LABO") return { error: "Non autorisé" }
+  if (!user || user.role !== "DIRECTEUR_LABO") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   const dossier = await prisma.dossier.findFirst({
     where: { id: dossierId, status: "VALIDE_ADMIN" },

@@ -18,7 +18,7 @@ export async function soumettreDecision(
   signature: string
 ): Promise<{ error: string | null }> {
   const user = await getSessionUser()
-  if (!user || user.role !== "ENCADRANT") return { error: "Non autorisé" }
+  if (!user || user.role !== "ENCADRANT") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   const encadrant = await prisma.encadrant.findUnique({
     where: { userId: user.id },

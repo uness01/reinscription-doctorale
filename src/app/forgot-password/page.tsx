@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
     setLoading(false)
 
     if (supabaseError) {
-      setError(supabaseError.message)
+      setError("Une erreur est survenue lors de l'envoi. Veuillez réessayer.")
     } else {
       setSent(true)
     }

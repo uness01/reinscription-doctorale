@@ -8,7 +8,7 @@ export async function updateProfil(input: {
   sujetThese: string
 }): Promise<{ error: string | null }> {
   const user = await getSessionUser()
-  if (!user || user.role !== "DOCTORANT") return { error: "Non autorisé" }
+  if (!user || user.role !== "DOCTORANT") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   const telephone = input.telephone.trim()
   const sujetThese = input.sujetThese.trim()

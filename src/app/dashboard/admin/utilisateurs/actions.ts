@@ -15,6 +15,27 @@ async function getSupabaseUid(email: string): Promise<string | null> {
   return data?.users?.find((u) => u.email === email)?.id ?? null
 }
 
+function prismaUniqueError(err: any): string {
+  if (err?.code === "P2002") {
+    const target = err?.meta?.target
+    const targets = Array.isArray(target) ? target.join(" ") : String(target ?? "")
+    if (targets.includes("cin")) return "Ce CIN est déjà utilisé."
+    if (targets.includes("cne")) return "Ce CNE est déjà utilisé."
+    if (targets.includes("apogee")) return "Ce N° Apogée est déjà utilisé."
+    if (targets.includes("email")) return "Cette adresse email est déjà utilisée."
+    return "Une valeur unique est déjà utilisée."
+  }
+  return "Une erreur est survenue. Veuillez réessayer."
+}
+
+function supabaseAuthError(err: { message: string }): string {
+  const msg = err.message.toLowerCase()
+  if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("user already")) {
+    return "Cette adresse email est déjà enregistrée."
+  }
+  return "Une erreur est survenue. Veuillez réessayer."
+}
+
 // ── Create user ─────────────────────────────────────────────────────────────
 
 export async function createUser(input: {
@@ -26,7 +47,7 @@ export async function createUser(input: {
   doctorant?: DoctorantInput
 }): Promise<{ error: string | null }> {
   const admin = await getSessionUser()
-  if (!admin || admin.role !== "ADMIN") return { error: "Non autorisé" }
+  if (!admin || admin.role !== "ADMIN") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
 
   const email = input.email.trim().toLowerCase()
 
@@ -35,7 +56,7 @@ export async function createUser(input: {
     password: input.password,
     email_confirm: true,
   })
-  if (authErr) return { error: authErr.message }
+  if (authErr) return { error: supabaseAuthError(authErr) }
 
   let createdUserId: string | null = null
   try {
@@ -71,7 +92,7 @@ export async function createUser(input: {
     }
     const uid = await getSupabaseUid(email)
     if (uid) await supabaseAdmin.auth.admin.deleteUser(uid)
-    return { error: err.message ?? "Erreur lors de la création." }
+    return { error: prismaUniqueError(err) }
   }
 }
 
@@ -101,7 +122,7 @@ export async function editUser(
   }
 ): Promise<{ error: string | null }> {
   const admin = await getSessionUser()
-  if (!admin || admin.role !== "ADMIN") return { error: "Non autorisé" }
+  if (!admin || admin.role !== "ADMIN") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
   if (id === admin.id && input.role !== "ADMIN")
     return { error: "Vous ne pouvez pas modifier votre propre rôle." }
 
@@ -116,7 +137,7 @@ export async function editUser(
         const { error: authErr } = await supabaseAdmin.auth.admin.updateUserById(uid, {
           email: newEmail,
         })
-        if (authErr) return { error: authErr.message }
+        if (authErr) return { error: supabaseAuthError(authErr) }
       }
     }
 
@@ -161,7 +182,7 @@ export async function editUser(
 
     return { error: null }
   } catch (err: any) {
-    return { error: err.message ?? "Erreur lors de la modification." }
+    return { error: prismaUniqueError(err) }
   }
 }
 
@@ -173,7 +194,7 @@ export async function setUserStatus(
   actif: boolean
 ): Promise<{ error: string | null }> {
   const admin = await getSessionUser()
-  if (!admin || admin.role !== "ADMIN") return { error: "Non autorisé" }
+  if (!admin || admin.role !== "ADMIN") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
   if (id === admin.id) return { error: "Vous ne pouvez pas modifier votre propre statut." }
 
   const uid = await getSupabaseUid(email)
@@ -181,7 +202,7 @@ export async function setUserStatus(
     const { error: authErr } = await supabaseAdmin.auth.admin.updateUserById(uid, {
       ban_duration: actif ? "none" : "876000h",
     })
-    if (authErr) return { error: authErr.message }
+    if (authErr) return { error: "Une erreur est survenue. Veuillez réessayer." }
   }
 
   await prisma.user.update({ where: { id }, data: { actif } })

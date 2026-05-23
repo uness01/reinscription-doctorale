@@ -34,7 +34,7 @@ export default function ResetPasswordContent() {
     const supabase = createClient()
     supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
       if (error) {
-        setExchangeError(error.message)
+        setExchangeError("Lien invalide ou expiré. Veuillez recommencer.")
         setPhase("error")
       } else {
         setPhase("ready")
@@ -57,7 +57,7 @@ export default function ResetPasswordContent() {
     setSaving(false)
 
     if (error) {
-      setFormError(error.message)
+      setFormError("Une erreur est survenue lors de la mise à jour du mot de passe. Veuillez réessayer.")
     } else {
       setPhase("success")
       await supabase.auth.signOut()
