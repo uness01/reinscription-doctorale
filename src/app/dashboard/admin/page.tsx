@@ -43,7 +43,7 @@ export default async function AdminPage() {
       </p>
 
       {/* Stats — always show totals, unaffected by search/filter */}
-      <div className="mb-6 grid grid-cols-4 gap-4">
+      <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard label="Total" value={String(allDossiers.length)} />
         <StatCard
           label="À valider"

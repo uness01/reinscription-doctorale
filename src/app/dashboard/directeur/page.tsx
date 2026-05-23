@@ -63,7 +63,7 @@ export default async function DirecteurPage() {
       </p>
 
       {/* Stats — always show totals, unaffected by search/filter */}
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label="À signer"
           value={String(allDossiers.filter((d) => d.status === "VALIDE_ADMIN").length)}

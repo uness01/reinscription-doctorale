@@ -340,8 +340,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex gap-6 border-b border-border py-3 last:border-b-0">
-      <span className="w-40 shrink-0 text-xs text-muted">{label}</span>
+    <div className="flex flex-col gap-0.5 border-b border-border py-3 last:border-b-0 sm:flex-row sm:gap-6">
+      <span className="text-xs text-muted sm:w-40 sm:shrink-0">{label}</span>
       <span className="text-sm text-foreground">{value}</span>
     </div>
   )

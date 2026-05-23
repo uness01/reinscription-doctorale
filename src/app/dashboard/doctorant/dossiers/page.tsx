@@ -91,7 +91,7 @@ export default async function MesDossiersPage() {
               return (
                 <li
                   key={d.id}
-                  className="flex items-center justify-between gap-4 border-b border-border px-5 py-4 last:border-b-0"
+                  className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4 last:border-b-0"
                 >
                   {/* Left: year + status */}
                   <div className="min-w-0">

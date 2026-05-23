@@ -169,7 +169,7 @@ export default async function DossierDetailPage({
       {dossier.attestation &&
         (dossier.status === "REINSCRIPTION_EFFECTUEE" ||
           dossier.status === "ATTESTATION_GENEREE") && (
-        <div className="mb-6 flex items-center justify-between rounded border border-accent/30 bg-accent/5 px-5 py-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded border border-accent/30 bg-accent/5 px-5 py-4">
           <div>
             <p className="text-sm font-medium text-foreground">
               Attestation de réinscription disponible
@@ -367,8 +367,8 @@ function Section({
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex gap-6 border-b border-border py-3 last:border-b-0">
-      <span className="w-40 shrink-0 text-xs text-muted">{label}</span>
+    <div className="flex flex-col gap-0.5 border-b border-border py-3 last:border-b-0 sm:flex-row sm:gap-6">
+      <span className="text-xs text-muted sm:w-40 sm:shrink-0">{label}</span>
       <span className="text-sm text-foreground">{value}</span>
     </div>
   )

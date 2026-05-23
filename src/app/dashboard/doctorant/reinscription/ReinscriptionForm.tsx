@@ -359,7 +359,7 @@ export default function ReinscriptionForm({
                             placeholder="Titre de la publication"
                           />
                         </Field>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <Field label="Type">
                             <select
                               className={INPUT}
@@ -398,7 +398,7 @@ export default function ReinscriptionForm({
                             placeholder="Prénom Nom, Prénom Nom…"
                           />
                         </Field>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <Field label="Revue / Conférence">
                             <input
                               className={INPUT}
@@ -472,7 +472,7 @@ export default function ReinscriptionForm({
                         </button>
                       </div>
                       <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <Field label="Type">
                             <select
                               className={INPUT}
@@ -635,7 +635,7 @@ export default function ReinscriptionForm({
         )}
 
         {/* Navigation */}
-        <div className="flex items-center justify-between border-t border-border px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-4">
           <button
             type="button"
             onClick={() => setStep((s) => s - 1)}
@@ -645,7 +645,7 @@ export default function ReinscriptionForm({
             ← Précédent
           </button>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {step < 5 ? (
               <button
                 type="button"
@@ -689,8 +689,8 @@ export default function ReinscriptionForm({
 
 function ReadRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex gap-6 py-3 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-border">
-      <span className="w-36 shrink-0 text-xs text-muted">{label}</span>
+    <div className="flex flex-col gap-0.5 py-3 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-border sm:flex-row sm:gap-6">
+      <span className="text-xs text-muted sm:w-36 sm:shrink-0">{label}</span>
       <span className="text-sm text-foreground">{value}</span>
     </div>
   )

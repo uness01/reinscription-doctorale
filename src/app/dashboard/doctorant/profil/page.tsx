@@ -111,8 +111,8 @@ export default async function ProfilPage() {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex gap-6 border-b border-border px-5 py-3 last:border-b-0">
-      <dt className="w-36 shrink-0 text-xs text-muted">{label}</dt>
+    <div className="flex flex-col gap-0.5 border-b border-border px-5 py-3 last:border-b-0 sm:flex-row sm:gap-6">
+      <dt className="text-xs text-muted sm:w-36 sm:shrink-0">{label}</dt>
       <dd className="text-sm text-foreground">{value}</dd>
     </div>
   )

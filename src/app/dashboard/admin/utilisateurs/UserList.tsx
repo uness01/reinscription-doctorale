@@ -73,7 +73,7 @@ export default function UserList({ users, selfId, laboratoires, encadrants }: Pr
 
       {/* Search + filter */}
       <div className="border-b border-border px-5 py-3">
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <input
             type="search"
             placeholder="Rechercher par nom, prénom ou email…"
@@ -84,7 +84,7 @@ export default function UserList({ users, selfId, laboratoires, encadrants }: Pr
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className={`w-52 ${fieldCls}`}
+            className={`w-full sm:w-52 ${fieldCls}`}
           >
             <option value="">Tous les rôles</option>
             {availableRoles.map((r) => (

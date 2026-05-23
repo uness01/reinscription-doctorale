@@ -123,7 +123,7 @@ export default function AddUserPanel({ laboratoires, encadrants }: Props) {
 
           <div className="px-5 py-5 space-y-4">
             {/* Base fields */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-foreground">Prénom</label>
                 <input className={INPUT} value={prenom} onChange={(e) => setPrenom(e.target.value)} placeholder="Prénom" />
@@ -187,7 +187,7 @@ export default function AddUserPanel({ laboratoires, encadrants }: Props) {
                 <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted">
                   Profil doctorant <span className="text-danger">— tous les champs sont obligatoires</span>
                 </p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1 block text-xs font-medium text-foreground">CIN</label>
                     <input className={INPUT} value={cin} onChange={(e) => setCin(e.target.value)} placeholder="Ex : BK123456" />

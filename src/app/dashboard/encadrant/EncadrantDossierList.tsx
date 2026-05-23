@@ -82,7 +82,7 @@ export default function EncadrantDossierList({ dossiers }: { dossiers: DossierIt
 
       {/* Search + filter */}
       <div className="border-b border-border px-5 py-3">
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <input
             type="search"
             placeholder="Rechercher par nom ou prénom…"
@@ -93,7 +93,7 @@ export default function EncadrantDossierList({ dossiers }: { dossiers: DossierIt
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className={`w-56 ${fieldCls}`}
+            className={`w-full sm:w-56 ${fieldCls}`}
           >
             <option value="">Tous les statuts</option>
             {availableStatuses.map((s) => (

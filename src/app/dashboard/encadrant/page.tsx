@@ -69,7 +69,7 @@ export default async function EncadrantPage() {
       </p>
 
       {/* Stats — always show totals, unaffected by search/filter */}
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="À valider" value={String(pending)} />
         <StatCard label="Validés" value={String(validated)} />
         <StatCard label="En correction" value={String(corrections)} />

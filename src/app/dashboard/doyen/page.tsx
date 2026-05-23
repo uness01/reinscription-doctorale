@@ -42,7 +42,7 @@ export default async function DoyenPage() {
       </p>
 
       {/* Stats — always show totals, unaffected by search */}
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label="À valider"
           value={String(allDossiers.filter((d) => d.status === "SIGNE_DIRECTEUR").length)}

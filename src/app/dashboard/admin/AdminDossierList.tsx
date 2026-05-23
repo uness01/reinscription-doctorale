@@ -75,7 +75,7 @@ export default function AdminDossierList({ dossiers }: { dossiers: DossierItem[]
   return (
     <>
       {/* Search + filter */}
-      <div className="mb-5 flex gap-3">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row">
         <input
           type="search"
           placeholder="Rechercher par nom ou prénom…"
@@ -86,7 +86,7 @@ export default function AdminDossierList({ dossiers }: { dossiers: DossierItem[]
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className={`w-56 ${fieldCls}`}
+          className={`w-full sm:w-56 ${fieldCls}`}
         >
           <option value="">Tous les statuts</option>
           {Object.entries(STATUS_LABEL).map(([value, label]) => (

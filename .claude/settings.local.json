@@ -14,7 +14,9 @@
       "Bash(Get-ChildItem \"node_modules/@prisma/client\" -Recurse -Filter \"*.d.ts\")",
       "Bash(Select-Object -First 5 FullName)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\pc\\\\reinscription-doctorale\" -Recurse -Filter \"*.tsx\")",
-      "Bash(Select-Object FullName)"
+      "Bash(Select-Object FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\pc\\\\reinscription-doctorale\" -Directory)",
+      "Bash(Select-Object -ExpandProperty Name)"
     ]
   }
 }

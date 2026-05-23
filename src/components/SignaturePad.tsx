@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useEffect } from "react"
 import SignatureCanvas from "react-signature-canvas"
 
 type Props = {
@@ -9,6 +9,26 @@ type Props = {
 
 export default function SignaturePad({ onChange }: Props) {
   const padRef = useRef<SignatureCanvas>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
+  useEffect(() => {
+    function resize() {
+      if (!containerRef.current || !padRef.current) return
+      const canvas = padRef.current.getCanvas()
+      const w = containerRef.current.offsetWidth
+      if (w > 0 && canvas.width !== w) {
+        canvas.width = w
+        padRef.current.clear()
+        onChangeRef.current(null)
+      }
+    }
+    resize()
+    const ro = new ResizeObserver(resize)
+    if (containerRef.current) ro.observe(containerRef.current)
+    return () => ro.disconnect()
+  }, [])
 
   function handleClear() {
     padRef.current?.clear()
@@ -23,7 +43,7 @@ export default function SignaturePad({ onChange }: Props) {
 
   return (
     <div>
-      <div className="overflow-hidden rounded border border-border bg-white">
+      <div ref={containerRef} className="overflow-hidden rounded border border-border bg-white">
         <SignatureCanvas
           ref={padRef}
           onEnd={handleEnd}
