@@ -47,12 +47,15 @@ export default function AddUserPanel({ laboratoires, encadrants }: Props) {
   const [anneeInscription, setAnneeInscription] = useState(String(new Date().getFullYear()))
   const [encadrantId, setEncadrantId] = useState("")
 
+  // Directeur lab field
+  const [directeurLaboratoireId, setDirecteurLaboratoireId] = useState("")
+
   function reset() {
     setNom(""); setPrenom(""); setEmail(""); setRole("DOCTORANT"); setPassword("")
     setCin(""); setCne(""); setApogee(""); setDateNaissance(""); setTelephone("")
     setFormationDoctorale(""); setLaboratoireId(laboratoires[0]?.id ?? "")
     setSujetThese(""); setAnneeInscription(String(new Date().getFullYear()))
-    setEncadrantId(""); setError(null)
+    setEncadrantId(""); setDirecteurLaboratoireId(""); setError(null)
   }
 
   function handleOpen() { reset(); setOpen(true) }
@@ -83,7 +86,11 @@ export default function AddUserPanel({ laboratoires, encadrants }: Props) {
 
     startTransition(async () => {
       setError(null)
-      const result = await createUser({ nom, prenom, email, role, password, doctorant: doctorantPayload })
+      const result = await createUser({
+        nom, prenom, email, role, password,
+        doctorant: doctorantPayload,
+        directeurLaboratoireId: role === "DIRECTEUR_LABO" ? directeurLaboratoireId || undefined : undefined,
+      })
       if (result.error) {
         setError(result.error)
       } else {
@@ -154,6 +161,25 @@ export default function AddUserPanel({ laboratoires, encadrants }: Props) {
                 </p>
               </div>
             </div>
+
+            {/* Directeur lab assignment */}
+            {role === "DIRECTEUR_LABO" && (
+              <div className="rounded border border-border bg-white p-4">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  Laboratoire assigné
+                </p>
+                <select
+                  className={INPUT}
+                  value={directeurLaboratoireId}
+                  onChange={(e) => setDirecteurLaboratoireId(e.target.value)}
+                >
+                  <option value="">— Aucun laboratoire —</option>
+                  {laboratoires.map((l) => (
+                    <option key={l.id} value={l.id}>{l.nom}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Doctorant profile section */}
             {isDoctorant && (

@@ -18,6 +18,7 @@ export type UserItem = {
   email: string
   role: string
   actif: boolean
+  directeurLaboratoireId: string | null
   doctorant: {
     cin: string
     cne: string

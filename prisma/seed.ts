@@ -127,10 +127,11 @@ async function main() {
 
   // ── 3. Laboratoires ───────────────────────────────────────────────────────
   console.log("\nStep 3 — Laboratoires")
+  const directeurUser = await prisma.user.findUniqueOrThrow({ where: { email: "directeur@uit.ac.ma" } })
   const labo = await prisma.laboratoire.upsert({
     where: { id: LABO_SEED_ID },
-    update: {},
-    create: { id: LABO_SEED_ID, nom: "Laboratoire Informatique et Systèmes" },
+    update: { directeurId: directeurUser.id },
+    create: { id: LABO_SEED_ID, nom: "Laboratoire Informatique et Systèmes", directeurId: directeurUser.id },
   })
   const laboMaths = await prisma.laboratoire.upsert({
     where: { id: LABO_MATHS_ID },
@@ -142,7 +143,7 @@ async function main() {
     update: {},
     create: { id: LABO_PHYSIQUE_ID, nom: "Laboratoire Physique des Matériaux" },
   })
-  console.log(`  ✓ ${labo.nom}`)
+  console.log(`  ✓ ${labo.nom}  (directeur: ${directeurUser.prenom} ${directeurUser.nom})`)
   console.log(`  ✓ ${laboMaths.nom}`)
   console.log(`  ✓ ${laboPhysique.nom}`)
 

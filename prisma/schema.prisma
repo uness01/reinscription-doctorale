@@ -42,16 +42,19 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  doctorant  Doctorant?
-  encadrant  Encadrant?
-  validations Validation[]
+  doctorant           Doctorant?
+  encadrant           Encadrant?
+  validations         Validation[]
+  labelledLaboratoire Laboratoire? @relation("DirecteurLabo")
 }
 
 model Laboratoire {
-  id         String      @id @default(cuid())
-  nom        String
-  doctorants Doctorant[]
-  dossiers   Dossier[]
+  id          String      @id @default(cuid())
+  nom         String
+  doctorants  Doctorant[]
+  dossiers    Dossier[]
+  directeurId String?     @unique
+  directeur   User?       @relation("DirecteurLabo", fields: [directeurId], references: [id])
 }
 
 model Doctorant {

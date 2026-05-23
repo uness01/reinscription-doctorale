@@ -27,6 +27,7 @@ type Props = {
     email: string
     role: string
     actif: boolean
+    directeurLaboratoireId: string | null
     doctorant: (DoctorantData & { cin: string; laboratoireNom: string }) | null
   }
   isSelf: boolean
@@ -65,6 +66,9 @@ export default function UserRow({ user, isSelf, laboratoires, encadrants }: Prop
   const [email, setEmail] = useState(user.email)
   const [role, setRole] = useState(user.role)
 
+  // Directeur lab field
+  const [directeurLaboratoireId, setDirecteurLaboratoireId] = useState(user.directeurLaboratoireId ?? "")
+
   // Doctorant fields
   const [cin, setCin] = useState(user.doctorant?.cin ?? "")
   const [cne, setCne] = useState(user.doctorant?.cne ?? "")
@@ -79,6 +83,7 @@ export default function UserRow({ user, isSelf, laboratoires, encadrants }: Prop
 
   function handleEdit() {
     setNom(user.nom); setPrenom(user.prenom); setEmail(user.email); setRole(user.role)
+    setDirecteurLaboratoireId(user.directeurLaboratoireId ?? "")
     setCin(user.doctorant?.cin ?? "")
     setCne(user.doctorant?.cne ?? "")
     setApogee(user.doctorant?.apogee ?? "")
@@ -118,7 +123,11 @@ export default function UserRow({ user, isSelf, laboratoires, encadrants }: Prop
 
     startTransition(async () => {
       setError(null)
-      const result = await editUser(user.id, { nom, prenom, email, role, doctorant: doctorantPayload })
+      const result = await editUser(user.id, {
+        nom, prenom, email, role,
+        doctorant: doctorantPayload,
+        directeurLaboratoireId: role === "DIRECTEUR_LABO" ? directeurLaboratoireId || undefined : undefined,
+      })
       if (result.error) { setError(result.error) }
       else { setEditing(false); router.refresh() }
     })
@@ -160,6 +169,13 @@ export default function UserRow({ user, isSelf, laboratoires, encadrants }: Prop
                   CIN&nbsp;{user.doctorant.cin}&nbsp;·&nbsp;
                   {user.doctorant.formationDoctorale}&nbsp;·&nbsp;
                   {user.doctorant.laboratoireNom}
+                </p>
+              )}
+              {user.role === "DIRECTEUR_LABO" && (
+                <p className="mt-1 text-[10px] text-muted">
+                  {user.directeurLaboratoireId
+                    ? laboratoires.find((l) => l.id === user.directeurLaboratoireId)?.nom ?? "Laboratoire inconnu"
+                    : "Aucun laboratoire assigné"}
                 </p>
               )}
             </div>
@@ -225,6 +241,25 @@ export default function UserRow({ user, isSelf, laboratoires, encadrants }: Prop
             </select>
           </div>
         </div>
+
+        {/* ── Directeur lab assignment ── */}
+        {role === "DIRECTEUR_LABO" && (
+          <div className="mb-4 rounded border border-border bg-white p-4">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted">
+              Laboratoire assigné
+            </p>
+            <select
+              className={INPUT}
+              value={directeurLaboratoireId}
+              onChange={(e) => setDirecteurLaboratoireId(e.target.value)}
+            >
+              <option value="">— Aucun laboratoire —</option>
+              {laboratoires.map((l) => (
+                <option key={l.id} value={l.id}>{l.nom}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* ── Doctorant profile ── */}
         {isDoctorant && (

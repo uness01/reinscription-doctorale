@@ -2,9 +2,6 @@ import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-// Note: schema has no Laboratoire→directeur link, so stats cover all dossiers.
-// A production build would add directeurId to Laboratoire and scope queries here.
-
 function currentAcademicYear(): string {
   const now = new Date()
   const y = now.getFullYear()
@@ -40,14 +37,40 @@ export default async function DirecteurStatsPage() {
   if (!user) redirect("/login")
   if (user.role !== "DIRECTEUR_LABO") redirect("/dashboard")
 
+  const laboratoire = await prisma.laboratoire.findUnique({
+    where: { directeurId: user.id },
+    select: { id: true, nom: true },
+  })
+
+  if (!laboratoire) {
+    return (
+      <div className="max-w-2xl">
+        <div className="mb-1 h-[3px] w-8 bg-accent" />
+        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-foreground">
+          Statistiques
+        </h1>
+        <div className="rounded border border-border px-5 py-4">
+          <p className="text-sm text-muted">
+            Aucun laboratoire assigné à votre compte. Contactez l&apos;administration.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const annee = currentAcademicYear()
 
   const [totalDoctorants, allDossiers, dossiersAnnee] = await Promise.all([
-    prisma.doctorant.count(),
+    prisma.doctorant.count({ where: { laboratoireId: laboratoire.id } }),
 
-    prisma.dossier.findMany({ select: { status: true } }),
+    prisma.dossier.findMany({
+      where: { laboratoireId: laboratoire.id },
+      select: { status: true },
+    }),
 
-    prisma.dossier.count({ where: { anneeUniversitaire: annee } }),
+    prisma.dossier.count({
+      where: { laboratoireId: laboratoire.id, anneeUniversitaire: annee },
+    }),
   ])
 
   const totalDossiers = allDossiers.length
@@ -71,7 +94,7 @@ export default async function DirecteurStatsPage() {
         Statistiques
       </h1>
       <p className="mb-8 text-sm text-muted">
-        Vue d&apos;ensemble du laboratoire — année {annee}
+        {laboratoire.nom} — année {annee}
       </p>
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">

@@ -45,6 +45,7 @@ export async function createUser(input: {
   role: string
   password: string
   doctorant?: DoctorantInput
+  directeurLaboratoireId?: string
 }): Promise<{ error: string | null }> {
   const admin = await getSessionUser()
   if (!admin || admin.role !== "ADMIN") return { error: "Vous n'êtes pas autorisé à effectuer cette action." }
@@ -84,10 +85,18 @@ export async function createUser(input: {
       })
     }
 
+    if (input.role === "DIRECTEUR_LABO" && input.directeurLaboratoireId) {
+      await prisma.laboratoire.update({
+        where: { id: input.directeurLaboratoireId },
+        data: { directeurId: created.id },
+      })
+    }
+
     return { error: null }
   } catch (err: any) {
     // Rollback: remove the Prisma user then the Supabase account
     if (createdUserId) {
+      await prisma.laboratoire.updateMany({ where: { directeurId: createdUserId }, data: { directeurId: null } }).catch(() => {})
       await prisma.user.delete({ where: { id: createdUserId } }).catch(() => {})
     }
     const uid = await getSupabaseUid(email)
@@ -119,6 +128,7 @@ export async function editUser(
     email: string
     role: string
     doctorant?: DoctorantInput
+    directeurLaboratoireId?: string
   }
 ): Promise<{ error: string | null }> {
   const admin = await getSessionUser()
@@ -177,6 +187,18 @@ export async function editUser(
           anneePremiereInscription: d.anneePremiereInscription,
           encadrantId: d.encadrantId ?? null,
         },
+      })
+    }
+
+    // Update lab assignment for DIRECTEUR_LABO — clear old, set new
+    await prisma.laboratoire.updateMany({
+      where: { directeurId: id },
+      data: { directeurId: null },
+    })
+    if (input.role === "DIRECTEUR_LABO" && input.directeurLaboratoireId) {
+      await prisma.laboratoire.update({
+        where: { id: input.directeurLaboratoireId },
+        data: { directeurId: id },
       })
     }
 

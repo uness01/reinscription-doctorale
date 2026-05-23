@@ -21,6 +21,7 @@ export default async function UtilisateursPage() {
             laboratoire: { select: { nom: true } },
           },
         },
+        labelledLaboratoire: { select: { id: true } },
       },
       orderBy: { nom: "asc" },
     }),
@@ -56,6 +57,7 @@ export default async function UtilisateursPage() {
     email: u.email,
     role: u.role,
     actif: u.actif,
+    directeurLaboratoireId: u.labelledLaboratoire?.id ?? null,
     doctorant: u.doctorant
       ? {
           cin: u.doctorant.cin,
