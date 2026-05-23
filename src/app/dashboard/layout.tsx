@@ -10,6 +10,7 @@ const NAV: Record<string, NavItem[]> = {
   DOCTORANT: [
     { label: "Tableau de bord", href: "/dashboard/doctorant" },
     { label: "Mes dossiers", href: "/dashboard/doctorant/dossiers" },
+    { label: "Mon profil", href: "/dashboard/doctorant/profil" },
   ],
   ENCADRANT: [
     { label: "Tableau de bord", href: "/dashboard/encadrant" },
