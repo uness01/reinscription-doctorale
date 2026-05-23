@@ -9,6 +9,12 @@ function currentAcademicYear(): string {
   return now.getMonth() >= 8 ? `${y}-${y + 1}` : `${y - 1}-${y}`
 }
 
+const COMPLETED = new Set([
+  "REINSCRIPTION_EFFECTUEE",
+  "VALIDE_DEFINITIVEMENT",
+  "ATTESTATION_GENEREE",
+])
+
 export default async function ReinscriptionPage() {
   const user = await getSessionUser()
   if (!user) redirect("/login")
@@ -25,6 +31,22 @@ export default async function ReinscriptionPage() {
   if (!doctorant) redirect("/dashboard/doctorant")
 
   const annee = currentAcademicYear()
+  const currentStartYear = parseInt(annee.split("-")[0])
+  const anneeThese = currentStartYear - doctorant.anneePremiereInscription + 1
+
+  // Server-side eligibility guard — mirrors the dashboard check so a blocked
+  // doctorant cannot bypass it by navigating directly to this URL.
+  if (anneeThese > 1) {
+    const prevAnnee = `${currentStartYear - 1}-${currentStartYear}`
+    const prevDossier = await prisma.dossier.findFirst({
+      where: { doctorantId: doctorant.id, anneeUniversitaire: prevAnnee },
+      select: { status: true },
+      orderBy: { createdAt: "desc" },
+    })
+    if (!prevDossier || !COMPLETED.has(prevDossier.status)) {
+      redirect("/dashboard/doctorant")
+    }
+  }
 
   // Load existing BROUILLON or CORRECTION_DEMANDEE for pre-filling
   const draft = await prisma.dossier.findFirst({

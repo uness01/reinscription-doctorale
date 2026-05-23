@@ -129,11 +129,21 @@ export default async function DoctorantPage() {
     requiredPastYears.push(`${y}-${y + 1}`)
   }
 
+  // The immediately preceding year — needed for the eligibility check.
+  // For year-3+ students it is already inside requiredPastYears; for year-2
+  // students it is not (the loop above starts at anneePremiereInscription+1
+  // which equals currentStartYear for them), so we add it explicitly so that
+  // byYear always contains it when a dossier for that year exists.
+  const prevAnnee =
+    anneeThese > 1 ? `${currentStartYear - 1}-${currentStartYear}` : null
+
   // Fetch past + current dossiers in one query, keep latest per year
   const allDossiers = await prisma.dossier.findMany({
     where: {
       doctorantId: doctorant.id,
-      anneeUniversitaire: { in: [...requiredPastYears, annee] },
+      anneeUniversitaire: {
+        in: [...new Set([...requiredPastYears, annee, ...(prevAnnee ? [prevAnnee] : [])])],
+      },
     },
     select: {
       id: true,
@@ -161,6 +171,17 @@ export default async function DoctorantPage() {
   }
 
   const currentDossier = byYear.get(annee) ?? null
+
+  // ── New-dossier eligibility ───────────────────────────────────────────────
+  // Eligible only when:
+  //   • anneeThese === 1  (current year IS the enrollment year — no reinscription
+  //                        has ever been required), OR
+  //   • the immediately preceding year's dossier exists AND is completed.
+  // A missing previous-year dossier is explicitly ineligible (not a free pass).
+  const prevDossier = prevAnnee ? (byYear.get(prevAnnee) ?? null) : null
+  const isEligible =
+    anneeThese === 1 ||
+    (prevDossier !== null && COMPLETED.has(prevDossier.status))
 
   // Fetch the correction comment if the current dossier is awaiting correction
   let correctionComment: string | null = null
@@ -287,7 +308,7 @@ export default async function DoctorantPage() {
                 </Link>
               )}
             </>
-          ) : (
+          ) : isEligible ? (
             // ── Eligible, no dossier yet: show CTA ──────────────────────
             <>
               <p className="mb-5 text-sm text-muted">
@@ -302,6 +323,20 @@ export default async function DoctorantPage() {
                 Commencer la réinscription
               </Link>
             </>
+          ) : (
+            // ── Ineligible: previous year dossier not yet finalised ──────
+            <div className="rounded border border-warning/30 bg-warning-bg px-4 py-4">
+              <p className="mb-1 text-sm font-medium text-warning">
+                Réinscription non disponible
+              </p>
+              <p className="text-sm text-warning">
+                Votre dossier de réinscription pour l&apos;année{" "}
+                <span className="font-medium">{prevAnnee}</span> est encore en
+                cours de traitement. Vous pourrez démarrer votre réinscription{" "}
+                {annee} une fois ce dossier finalisé par l&apos;ensemble des
+                valideurs.
+              </p>
+            </div>
           )}
         </div>
       </section>

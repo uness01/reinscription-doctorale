@@ -11,6 +11,7 @@ export default async function ProfilPage() {
   const doctorant = await prisma.doctorant.findUnique({
     where: { userId: user.id },
     include: {
+      user: { select: { email: true } },
       laboratoire: { select: { nom: true } },
       encadrant: { include: { user: { select: { nom: true, prenom: true } } } },
     },
@@ -64,7 +65,7 @@ export default async function ProfilPage() {
         <dl>
           <InfoRow label="Nom" value={user.nom} />
           <InfoRow label="Prénom" value={user.prenom} />
-          <InfoRow label="Email" value={user.email} />
+          <InfoRow label="Email" value={doctorant.user.email} />
           <InfoRow label="CIN" value={doctorant.cin} />
           <InfoRow label="CNE" value={doctorant.cne} />
           <InfoRow label="N° Apogée" value={doctorant.apogee} />

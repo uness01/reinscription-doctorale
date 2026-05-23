@@ -411,11 +411,61 @@ async function main() {
     console.log("  ✓ Fatine Berrada — Maths — 2024-2025: CORRECTION_DEMANDEE")
   }
 
+  // ── 10. Blocked doctorant — eligibility-check test ───────────────────────
+  // Karim Mansouri enrolled in 2024 (anneePremiereInscription = 2024).
+  // His 2024-2025 reinscription dossier is stuck at CORRECTION_DEMANDEE.
+  // Because prevAnnee ("2024-2025") is not completed, the eligibility check
+  // blocks him from starting a 2025-2026 dossier with the warning banner.
+  console.log("\nStep 10 — Blocked doctorant (Karim Mansouri)")
+  await ensureSupabaseUser("blocked.doctorant@uit.ac.ma")
+  {
+    const u = await prisma.user.upsert({
+      where: { email: "blocked.doctorant@uit.ac.ma" },
+      update: {},
+      create: {
+        email: "blocked.doctorant@uit.ac.ma",
+        nom: "Mansouri",
+        prenom: "Karim",
+        role: Role.DOCTORANT,
+      },
+    })
+    const d = await prisma.doctorant.upsert({
+      where: { userId: u.id },
+      update: {},
+      create: {
+        userId: u.id,
+        cin: "BN789012",
+        cne: "R791356802",
+        apogee: "78901234",
+        dateNaissance: new Date("2000-04-10"),
+        telephone: "0678901234",
+        formationDoctorale: "Informatique et Mathématiques Appliquées",
+        laboratoireId: labo.id,
+        encadrantId: encadrant.id,
+        sujetThese: "Méthodes d'apprentissage automatique pour la reconnaissance de formes",
+        anneePremiereInscription: 2024,
+      },
+    })
+    await wipeAndCreateDossiers(d.id, labo.id, [
+      {
+        annee: "2024-2025",
+        status: DossierStatus.CORRECTION_DEMANDEE,
+        travaux: "Revue bibliographique complète et étude des méthodes existantes.",
+        avancement: "Ébauche du chapitre 1 rédigée — section résultats à compléter.",
+      },
+      // No 2025-2026 entry: when this user logs in and visits the dashboard,
+      // the eligibility check fires because prevAnnee ("2024-2025") is not
+      // completed, showing "Réinscription non disponible" instead of the CTA.
+    ])
+    console.log("  ✓ Karim Mansouri — 2024-2025: CORRECTION_DEMANDEE (no 2025-2026 dossier)")
+  }
+
   console.log("\nSeed complete. Test credentials:")
   console.log("  Password for all accounts: Test1234!")
   for (const u of USERS) {
     console.log(`  ${u.role.padEnd(14)} → ${u.email}`)
   }
+  console.log("  DOCTORANT      → blocked.doctorant@uit.ac.ma  (eligibility-blocked test)")
 }
 
 main()
