@@ -56,7 +56,7 @@ const ACCENT = "#1B3A8C"
 const styles = StyleSheet.create({
   page: {
     paddingTop: 0,
-    paddingBottom: 56,
+    paddingBottom: 40,
     paddingHorizontal: 0,
     fontFamily: "Helvetica",
     fontSize: 11,
@@ -74,11 +74,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 64,
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingTop: 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
-    marginBottom: 28,
+    marginBottom: 18,
   },
   headerLogo: {
     width: 110,
@@ -114,12 +114,12 @@ const styles = StyleSheet.create({
   divider: {
     borderBottomWidth: 1,
     borderBottomColor: "#d0d0d0",
-    marginBottom: 24,
+    marginBottom: 16,
   },
   // ── Title block ────────────────────────────────────────────────────────
   titleWrapper: {
     alignItems: "center",
-    marginBottom: 28,
+    marginBottom: 20,
   },
   titleBar: {
     width: 40,
@@ -173,8 +173,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   closingText: {
-    marginTop: 8,
-    marginBottom: 20,
+    marginTop: 6,
+    marginBottom: 12,
     color: "#333",
     fontSize: 11,
   },
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     color: ACCENT,
     letterSpacing: 1.2,
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: "center",
   },
   signaturesRow: {
@@ -238,6 +238,65 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#bbb",
     marginBottom: 2,
+  },
+  // ── Signatures + stamp shared row ────────────────────────────────────
+  bottomRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+  sigColumn: {
+    flex: 1,
+  },
+  stampColumn: {
+    width: 90,
+    alignItems: "center",
+    paddingLeft: 6,
+  },
+  // ── Official stamp ────────────────────────────────────────────────────
+  stampOuter: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    borderWidth: 2,
+    borderColor: ACCENT,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stampInner: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 1,
+    borderColor: ACCENT,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 4,
+  },
+  stampDiamond: {
+    fontSize: 6,
+    color: ACCENT,
+    marginBottom: 2,
+  },
+  stampTitle: {
+    fontSize: 5.5,
+    fontFamily: "Helvetica-Bold",
+    color: ACCENT,
+    textAlign: "center",
+    letterSpacing: 0.5,
+    lineHeight: 1.4,
+  },
+  stampRule: {
+    width: 44,
+    height: 1,
+    backgroundColor: ACCENT,
+    marginVertical: 3,
+  },
+  stampSub: {
+    fontSize: 5.5,
+    color: ACCENT,
+    textAlign: "center",
+    letterSpacing: 0.3,
+    lineHeight: 1.4,
   },
 })
 
@@ -337,34 +396,56 @@ function AttestationDoc(data: AttestationData) {
             Fait à Kénitra, le {data.dateGeneration}
           </Text>
 
-          {/* Validator signatures */}
-          {data.validators.length > 0 && (
-            <>
-              <View style={styles.sigDivider} />
-              <Text style={styles.sigSectionLabel}>
-                SIGNATURES DES VALIDEURS
-              </Text>
-              <View style={styles.signaturesRow}>
-                {data.validators.map((v, i) => (
-                  <View key={i} style={styles.sigBlock}>
-                    <Text style={styles.sigRole}>{v.roleLabel}</Text>
-                    <Text style={styles.sigName}>
-                      {v.prenom} {v.nom}
-                    </Text>
-                    <Text style={styles.sigDate}>{v.date}</Text>
-                    {v.signature ? (
-                      <Image
-                        src={sigSrc(v.signature)}
-                        style={styles.sigImage}
-                      />
-                    ) : (
-                      <View style={styles.sigLine} />
-                    )}
+          {/* Signatures + official stamp — share one horizontal band */}
+          <View style={styles.sigDivider} />
+          <View style={styles.bottomRow}>
+
+            {/* Left: validator signatures */}
+            <View style={styles.sigColumn}>
+              {data.validators.length > 0 && (
+                <>
+                  <Text style={styles.sigSectionLabel}>
+                    SIGNATURES DES VALIDEURS
+                  </Text>
+                  <View style={styles.signaturesRow}>
+                    {data.validators.map((v, i) => (
+                      <View key={i} style={styles.sigBlock}>
+                        <Text style={styles.sigRole}>{v.roleLabel}</Text>
+                        <Text style={styles.sigName}>
+                          {v.prenom} {v.nom}
+                        </Text>
+                        <Text style={styles.sigDate}>{v.date}</Text>
+                        {v.signature ? (
+                          <Image
+                            src={sigSrc(v.signature)}
+                            style={styles.sigImage}
+                          />
+                        ) : (
+                          <View style={styles.sigLine} />
+                        )}
+                      </View>
+                    ))}
                   </View>
-                ))}
+                </>
+              )}
+            </View>
+
+            {/* Right: CED stamp */}
+            <View style={styles.stampColumn}>
+              <View style={styles.stampOuter}>
+                <View style={styles.stampInner}>
+                  <Text style={styles.stampDiamond}>◆</Text>
+                  <Text style={styles.stampTitle}>CENTRE DES</Text>
+                  <Text style={styles.stampTitle}>ÉTUDES DOCTORALES</Text>
+                  <View style={styles.stampRule} />
+                  <Text style={styles.stampSub}>Université Ibn Tofail</Text>
+                  <Text style={styles.stampSub}>Kénitra</Text>
+                  <Text style={styles.stampDiamond}>◆</Text>
+                </View>
               </View>
-            </>
-          )}
+            </View>
+
+          </View>
 
         </View>
       </Page>
