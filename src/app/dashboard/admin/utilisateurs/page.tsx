@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import AddUserPanel from "./AddUserPanel"
-import UserRow from "./UserRow"
+import UserList, { type UserItem } from "./UserList"
 
 const ROLE_ORDER: Record<string, number> = {
   ADMIN: 0, ENCADRANT: 1, DIRECTEUR_LABO: 2, DOYEN: 3, DOCTORANT: 4,
@@ -48,6 +48,31 @@ export default async function UtilisateursPage() {
     nom: e.user.nom,
   }))
 
+  // Serialise — strip non-transferable Date fields
+  const userItems: UserItem[] = sorted.map((u) => ({
+    id: u.id,
+    nom: u.nom,
+    prenom: u.prenom,
+    email: u.email,
+    role: u.role,
+    actif: u.actif,
+    doctorant: u.doctorant
+      ? {
+          cin: u.doctorant.cin,
+          cne: u.doctorant.cne,
+          apogee: u.doctorant.apogee,
+          dateNaissance: u.doctorant.dateNaissance.toISOString().split("T")[0],
+          telephone: u.doctorant.telephone,
+          formationDoctorale: u.doctorant.formationDoctorale,
+          laboratoireId: u.doctorant.laboratoireId,
+          laboratoireNom: u.doctorant.laboratoire.nom,
+          sujetThese: u.doctorant.sujetThese,
+          anneePremiereInscription: u.doctorant.anneePremiereInscription,
+          encadrantId: u.doctorant.encadrantId,
+        }
+      : null,
+  }))
+
   return (
     <div className="max-w-3xl">
       <div className="mb-1 h-[3px] w-8 bg-accent" />
@@ -68,56 +93,12 @@ export default async function UtilisateursPage() {
       {/* Add user */}
       <AddUserPanel laboratoires={labOptions} encadrants={encadrantOptions} />
 
-      {/* User list */}
-      <section className="rounded border border-border">
-        <div className="border-b border-border px-5 py-3">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-            {total} utilisateur{total > 1 ? "s" : ""}
-          </h2>
-        </div>
-        {sorted.length === 0 ? (
-          <div className="px-5 py-8 text-center">
-            <p className="text-sm text-muted">Aucun utilisateur.</p>
-          </div>
-        ) : (
-          <ul>
-            {sorted.map((u) => (
-              <UserRow
-                key={u.id}
-                user={{
-                  id: u.id,
-                  nom: u.nom,
-                  prenom: u.prenom,
-                  email: u.email,
-                  role: u.role,
-                  actif: u.actif,
-                  doctorant: u.doctorant
-                    ? {
-                        cin: u.doctorant.cin,
-                        cne: u.doctorant.cne,
-                        apogee: u.doctorant.apogee,
-                        // Serialize Date → string before crossing server→client boundary
-                        dateNaissance: u.doctorant.dateNaissance
-                          .toISOString()
-                          .split("T")[0],
-                        telephone: u.doctorant.telephone,
-                        formationDoctorale: u.doctorant.formationDoctorale,
-                        laboratoireId: u.doctorant.laboratoireId,
-                        laboratoireNom: u.doctorant.laboratoire.nom,
-                        sujetThese: u.doctorant.sujetThese,
-                        anneePremiereInscription: u.doctorant.anneePremiereInscription,
-                        encadrantId: u.doctorant.encadrantId,
-                      }
-                    : null,
-                }}
-                isSelf={u.id === currentUser.id}
-                laboratoires={labOptions}
-                encadrants={encadrantOptions}
-              />
-            ))}
-          </ul>
-        )}
-      </section>
+      <UserList
+        users={userItems}
+        selfId={currentUser.id}
+        laboratoires={labOptions}
+        encadrants={encadrantOptions}
+      />
     </div>
   )
 }

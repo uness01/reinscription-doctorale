@@ -1,36 +1,7 @@
-﻿import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-
-const STATUS_LABEL: Record<string, string> = {
-  SOUMIS: "Soumis",
-  EN_ATTENTE_ENCADRANT: "En attente de l'encadrant",
-  CORRECTION_DEMANDEE: "Correction demandée",
-  REFUSE: "Refusé",
-  VALIDE_ENCADRANT: "Validé par l'encadrant",
-  VALIDE_ADMIN: "Validé par l'administration",
-  SIGNE_DIRECTEUR: "Signé par le directeur",
-  EN_ATTENTE_DOYEN: "En attente du doyen",
-  VALIDE_DEFINITIVEMENT: "Validé définitivement",
-  REINSCRIPTION_EFFECTUEE: "Réinscription effectuée",
-  ATTESTATION_GENEREE: "Attestation générée",
-  ARCHIVE: "Archivé",
-}
-
-const STATUS_CLASS: Record<string, string> = {
-  SOUMIS: "bg-warning-bg text-warning",
-  EN_ATTENTE_ENCADRANT: "bg-accent/10 text-accent",
-  CORRECTION_DEMANDEE: "bg-warning-bg text-warning",
-  REFUSE: "bg-danger-bg text-danger",
-  VALIDE_ENCADRANT: "bg-success/10 text-success",
-  VALIDE_ADMIN: "bg-success/10 text-success",
-  SIGNE_DIRECTEUR: "bg-success/10 text-success",
-  VALIDE_DEFINITIVEMENT: "bg-success/20 text-success",
-  REINSCRIPTION_EFFECTUEE: "bg-success/20 text-success",
-  ATTESTATION_GENEREE: "bg-success/20 text-success",
-  ARCHIVE: "bg-border text-muted",
-}
+import DoyenDossierList, { type DossierItem } from "./DoyenDossierList"
 
 export default async function DoyenPage() {
   const user = await getSessionUser()
@@ -48,8 +19,16 @@ export default async function DoyenPage() {
     orderBy: { updatedAt: "desc" },
   })
 
-  const queue = allDossiers.filter((d) => d.status === "SIGNE_DIRECTEUR")
-  const others = allDossiers.filter((d) => d.status !== "SIGNE_DIRECTEUR")
+  // Serialise — strip non-transferable Date fields
+  const dossierItems: DossierItem[] = allDossiers.map((d) => ({
+    id: d.id,
+    anneeUniversitaire: d.anneeUniversitaire,
+    status: d.status,
+    doctorant: {
+      formationDoctorale: d.doctorant.formationDoctorale,
+      user: { nom: d.doctorant.user.nom, prenom: d.doctorant.user.prenom },
+    },
+  }))
 
   return (
     <div className="max-w-2xl">
@@ -62,9 +41,12 @@ export default async function DoyenPage() {
         de laboratoire.
       </p>
 
-      {/* Stats */}
+      {/* Stats — always show totals, unaffected by search */}
       <div className="mb-6 grid grid-cols-3 gap-4">
-        <StatCard label="À valider" value={String(queue.length)} />
+        <StatCard
+          label="À valider"
+          value={String(allDossiers.filter((d) => d.status === "SIGNE_DIRECTEUR").length)}
+        />
         <StatCard
           label="Validés"
           value={String(
@@ -77,85 +59,8 @@ export default async function DoyenPage() {
         <StatCard label="Total" value={String(allDossiers.length)} />
       </div>
 
-      {/* Primary queue: SIGNE_DIRECTEUR */}
-      <section className="mb-6 rounded border border-border">
-        <div className="border-b border-border px-5 py-3">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-            En attente de votre validation ({queue.length})
-          </h2>
-        </div>
-        {queue.length === 0 ? (
-          <div className="px-5 py-8 text-center">
-            <p className="text-sm text-muted">
-              Aucun dossier en attente de validation.
-            </p>
-          </div>
-        ) : (
-          <ul>
-            {queue.map((d) => (
-              <DossierRow key={d.id} d={d} />
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* Overview */}
-      <section className="rounded border border-border">
-        <div className="border-b border-border px-5 py-3">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-            Tous les autres dossiers ({others.length})
-          </h2>
-        </div>
-        {others.length === 0 ? (
-          <div className="px-5 py-8 text-center">
-            <p className="text-sm text-muted">Aucun dossier.</p>
-          </div>
-        ) : (
-          <ul>
-            {others.map((d) => (
-              <DossierRow key={d.id} d={d} />
-            ))}
-          </ul>
-        )}
-      </section>
+      <DoyenDossierList dossiers={dossierItems} />
     </div>
-  )
-}
-
-type DossierItem = {
-  id: string
-  anneeUniversitaire: string
-  status: string
-  doctorant: {
-    formationDoctorale: string
-    user: { nom: string; prenom: string }
-  }
-}
-
-function DossierRow({ d }: { d: DossierItem }) {
-  return (
-    <li className="border-b border-border last:border-b-0">
-      <Link
-        href={`/dashboard/doyen/dossier/${d.id}`}
-        className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-border/30"
-      >
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">
-            {d.doctorant.user.prenom} {d.doctorant.user.nom}
-          </p>
-          <p className="mt-0.5 truncate text-xs text-muted">
-            {d.anneeUniversitaire}&nbsp;·&nbsp;{d.doctorant.formationDoctorale}
-          </p>
-        </div>
-        <span
-          className={`shrink-0 inline-flex rounded px-2.5 py-1 text-xs font-medium ${
-            STATUS_CLASS[d.status] ?? "bg-border text-muted"
-          }`}
-        >
-          {STATUS_LABEL[d.status] ?? d.status}
-        </span>
-      </Link>
-    </li>
   )
 }
 
