@@ -50,7 +50,7 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
           {title}
         </h2>
       </div>
-      <div className="px-4 py-4">{children}</div>
+      <div className="px-4 py-4 min-h-[300px]">{children}</div>
     </div>
   )
 }
@@ -59,7 +59,7 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 
 export function StatusChart({ data }: { data: ChartData["statusData"] }) {
   // Horizontal layout keeps long French labels fully readable on the Y-axis
-  const height = Math.max(240, data.length * 32)
+  const height = Math.max(300, data.length * 32)
   return (
     <ChartCard title="Répartition par statut">
       <ResponsiveContainer width="100%" height={height}>
@@ -86,19 +86,23 @@ export function StatusChart({ data }: { data: ChartData["statusData"] }) {
 export function LaboChart({ data }: { data: ChartData["laboData"] }) {
   return (
     <ChartCard title="Répartition par laboratoire">
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
-          <XAxis type="number" tick={AXIS_STYLE} allowDecimals={false} />
-          <YAxis
-            type="category"
-            dataKey="nom"
-            tick={{ ...AXIS_STYLE, width: 140 }}
-            width={150}
-          />
-          <Tooltip contentStyle={TOOLTIP_STYLE} />
-          <Bar dataKey="count" name="Doctorants" fill={ACCENT} radius={[0, 3, 3, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: 350 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 16, bottom: 4 }}>
+              <XAxis type="number" tick={AXIS_STYLE} allowDecimals={false} />
+              <YAxis
+                type="category"
+                dataKey="nom"
+                tick={{ ...AXIS_STYLE, width: 140 }}
+                width={150}
+              />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Bar dataKey="count" name="Doctorants" fill={ACCENT} radius={[0, 3, 3, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </ChartCard>
   )
 }
@@ -106,19 +110,23 @@ export function LaboChart({ data }: { data: ChartData["laboData"] }) {
 export function FormationChart({ data }: { data: ChartData["formationData"] }) {
   return (
     <ChartCard title="Répartition par formation doctorale">
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
-          <XAxis type="number" tick={AXIS_STYLE} allowDecimals={false} />
-          <YAxis
-            type="category"
-            dataKey="formation"
-            tick={{ ...AXIS_STYLE, width: 140 }}
-            width={150}
-          />
-          <Tooltip contentStyle={TOOLTIP_STYLE} />
-          <Bar dataKey="count" name="Doctorants" fill="#3B6FD4" radius={[0, 3, 3, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: 350 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 16, bottom: 4 }}>
+              <XAxis type="number" tick={AXIS_STYLE} allowDecimals={false} />
+              <YAxis
+                type="category"
+                dataKey="formation"
+                tick={{ ...AXIS_STYLE, width: 140 }}
+                width={150}
+              />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Bar dataKey="count" name="Doctorants" fill="#3B6FD4" radius={[0, 3, 3, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </ChartCard>
   )
 }
@@ -134,7 +142,7 @@ export function PubTypeChart({ data }: { data: ChartData["pubTypeData"] }) {
   const labeled = data.map((d) => ({ ...d, name: PUB_LABELS[d.type] ?? d.type }))
   return (
     <ChartCard title="Publications par type">
-      <ResponsiveContainer width="100%" height={200}>
+      <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
             data={labeled}
@@ -154,7 +162,7 @@ export function PubTypeChart({ data }: { data: ChartData["pubTypeData"] }) {
             ))}
           </Pie>
           <Tooltip contentStyle={TOOLTIP_STYLE} />
-          <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
+          <Legend iconSize={10} verticalAlign="bottom" wrapperStyle={{ fontSize: '11px' }} />
         </PieChart>
       </ResponsiveContainer>
     </ChartCard>
@@ -164,7 +172,7 @@ export function PubTypeChart({ data }: { data: ChartData["pubTypeData"] }) {
 export function AnneeChart({ data }: { data: ChartData["anneeData"] }) {
   return (
     <ChartCard title="Évolution des réinscriptions par année universitaire">
-      <ResponsiveContainer width="100%" height={200}>
+      <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 4, right: 16, left: -16, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis dataKey="annee" tick={AXIS_STYLE} />

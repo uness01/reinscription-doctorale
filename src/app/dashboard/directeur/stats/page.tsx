@@ -97,7 +97,7 @@ export default async function DirecteurStatsPage() {
         {laboratoire.nom} — année {annee}
       </p>
 
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatCard label="Doctorants" value={String(totalDoctorants)} sub="inscrits" />
         <StatCard
           label="Dossiers cette année"

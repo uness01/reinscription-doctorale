@@ -143,7 +143,7 @@ export default async function AdminStatsPage() {
       </p>
 
       {/* ── Summary cards ───────────────────────────────────────────────── */}
-      <div className="mb-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           label="Doctorants"
           value={String(totalDoctorants)}
@@ -175,7 +175,7 @@ export default async function AdminStatsPage() {
       )}
 
       {/* ── Labo + Formation (2 columns) ─────────────────────────────────── */}
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         {laboData.length > 0 ? (
           <LaboChart data={laboData} />
         ) : (
@@ -189,7 +189,7 @@ export default async function AdminStatsPage() {
       </div>
 
       {/* ── Publications + Évolution (2 columns) ─────────────────────────── */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {pubTypeData.length > 0 ? (
           <PubTypeChart data={pubTypeData} />
         ) : (
